@@ -1,0 +1,31 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: USER-SERVICE
+  datasource:
+    url: jdbc:sqlserver://${DB_HOST:localhost}:1433;databaseName=users_db;encrypt=true;trustServerCertificate=true
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  sql:
+    init:
+      mode: never
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 86400000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

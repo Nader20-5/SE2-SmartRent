@@ -1,0 +1,35 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/auth/**, /api/admin/**, /api/users/**
+        - id: property-service
+          uri: lb://PROPERTY-SERVICE
+          predicates:
+            - Path=/api/properties/**, /api/reviews/**, /api/favorites/**
+        - id: visit-service
+          uri: lb://VISIT-SERVICE
+          predicates:
+            - Path=/api/visits/**
+        - id: rental-service
+          uri: lb://RENTAL-SERVICE
+          predicates:
+            - Path=/api/rentals/**
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+  public-paths:
+    - /api/auth/register
+    - /api/auth/login
+    - /api/properties
