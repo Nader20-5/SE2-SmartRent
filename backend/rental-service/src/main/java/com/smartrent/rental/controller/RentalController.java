@@ -22,8 +22,7 @@ public class RentalController {
     public ResponseEntity<RentalResponseDto> createApplication(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody CreateRentalDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.createApplication(userId, dto));
     }
 
     @PostMapping("/{id}/documents")
@@ -32,15 +31,13 @@ public class RentalController {
             @PathVariable Long id,
             @RequestParam DocumentType type,
             @RequestParam("file") MultipartFile file) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.uploadDocuments(userId, id, type, file));
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<RentalResponseDto>> getTenantApplications(
             @RequestHeader("X-User-Id") Long userId) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.getTenantApplications(userId));
     }
 
     @GetMapping("/{id}")
@@ -48,31 +45,28 @@ public class RentalController {
             @RequestHeader("X-User-Id") Long userId,
             @RequestHeader("X-User-Role") String role,
             @PathVariable Long id) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.getApplicationById(userId, role, id));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> withdrawApplication(
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id) {
-        // TODO: implement
-        return null;
+        rentalService.withdrawApplication(userId, id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/landlord")
     public ResponseEntity<List<RentalResponseDto>> getLandlordApplications(
             @RequestHeader("X-User-Id") Long userId) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.getLandlordApplications(userId));
     }
 
     @PatchMapping("/{id}/approve")
     public ResponseEntity<RentalResponseDto> approveApplication(
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.approveApplication(userId, id));
     }
 
     @PatchMapping("/{id}/reject")
@@ -80,7 +74,6 @@ public class RentalController {
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id,
             @Valid @RequestBody RejectRentalDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(rentalService.rejectApplication(userId, id, dto));
     }
 }

@@ -17,4 +17,5 @@ public class PropertySummaryDto {
     private Long landlordId;
     private BigDecimal monthlyRent;
     private String status;
+    private Boolean isAvailable;
 }

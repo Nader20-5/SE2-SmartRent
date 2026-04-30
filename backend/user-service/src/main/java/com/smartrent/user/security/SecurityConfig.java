@@ -18,12 +18,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // TODO: configure JWT filter chain
         http
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/users/*/internal").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .anyRequest().permitAll()
             );
         return http.build();
     }

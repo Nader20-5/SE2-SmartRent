@@ -16,13 +16,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponseDto> register(@Valid @RequestBody RegisterDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(authService.register(dto));
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@Valid @RequestBody LoginDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(authService.login(dto));
     }
 }
