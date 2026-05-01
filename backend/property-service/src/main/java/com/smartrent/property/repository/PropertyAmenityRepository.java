@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface PropertyAmenityRepository extends JpaRepository<PropertyAmenity, Long> {
     List<PropertyAmenity> findByPropertyId(Long propertyId);
+    void deleteByPropertyId(Long propertyId);
 }

@@ -1,10 +1,12 @@
 package com.smartrent.property.aspect;
 
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Aspect
 @Component
 public class PerformanceAspect {
@@ -13,7 +15,18 @@ public class PerformanceAspect {
 
     @Around("execution(* com.smartrent.property.service.impl.*.*(..))")
     public Object monitorPerformance(ProceedingJoinPoint pjp) throws Throwable {
-        // TODO: measure execution time, warn if > THRESHOLD_MS
-        return pjp.proceed();
+        long start = System.currentTimeMillis();
+        Object result = pjp.proceed();
+        long elapsed = System.currentTimeMillis() - start;
+
+        String methodName = pjp.getSignature().toShortString();
+
+        if (elapsed > THRESHOLD_MS) {
+            log.warn("SLOW METHOD: {} took {}ms (threshold: {}ms)", methodName, elapsed, THRESHOLD_MS);
+        } else {
+            log.debug("{} completed in {}ms", methodName, elapsed);
+        }
+
+        return result;
     }
 }

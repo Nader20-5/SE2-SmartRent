@@ -14,6 +14,8 @@ public interface PropertyMapper {
     @Mapping(target = "amenities", ignore = true)
     @Mapping(target = "averageRating", ignore = true)
     @Mapping(target = "reviewCount", ignore = true)
+    @Mapping(target = "landlordName", ignore = true)
+    @Mapping(target = "isAvailable", source = "available")
     PropertyResponseDto toResponseDto(Property property);
 
     @Mapping(target = "id", ignore = true)
@@ -24,9 +26,12 @@ public interface PropertyMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "images", ignore = true)
+    @Mapping(target = "amenities", ignore = true)
     @Mapping(target = "reviews", ignore = true)
     @Mapping(target = "favorites", ignore = true)
     Property toEntity(CreatePropertyDto dto);
 
+    @Mapping(target = "status", expression = "java(property.getStatus().name())")
+    @Mapping(target = "isAvailable", source = "available")
     PropertySummaryDto toSummaryDto(Property property);
 }

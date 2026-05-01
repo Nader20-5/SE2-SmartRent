@@ -19,6 +19,7 @@ import java.util.List;
 public class PropertyResponseDto {
     private Long id;
     private Long landlordId;
+    private String landlordName;
     private String title;
     private String description;
     private String address;

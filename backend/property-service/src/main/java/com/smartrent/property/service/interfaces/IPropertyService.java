@@ -15,8 +15,8 @@ public interface IPropertyService {
     Page<PropertyResponseDto> getLandlordProperties(Long landlordId, Pageable pageable);
     PropertyResponseDto updateProperty(Long landlordId, Long propertyId, UpdatePropertyDto dto);
     void deleteProperty(Long landlordId, Long propertyId);
-    void uploadImages(Long landlordId, Long propertyId, List<MultipartFile> files);
+    PropertyResponseDto uploadImages(Long landlordId, Long propertyId, List<MultipartFile> files);
     void deleteImage(Long landlordId, Long propertyId, Long imageId);
-    PropertyResponseDto updatePropertyStatus(Long propertyId, PropertyStatus status);
+    PropertyResponseDto updatePropertyStatus(Long propertyId, PropertyStatus status, String rejectionReason);
     PropertySummaryDto getPropertyInternal(Long id);
 }
