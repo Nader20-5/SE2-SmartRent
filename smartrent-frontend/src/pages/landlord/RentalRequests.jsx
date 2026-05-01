@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getLandlordApplications, approveRental, rejectRental } from '../../services/rentalService';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../../components/common/Sidebar';
 import {
   FaFileSignature,
   FaCheckCircle,

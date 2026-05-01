@@ -13,7 +13,7 @@ import { toggleFavorite } from "../../services/favoriteService";
 
 const PROPERTY_TYPES = ["All Types", "Apartment", "House", "Villa", "Studio"];
 
-const Home = () => {
+function Home() {
   const [properties, setProperties] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -33,13 +33,14 @@ const Home = () => {
   const [appliedSearchType, setAppliedSearchType] = useState("All Types");
 
   useEffect(() => {
+    console.log("Home component mounted, fetching properties...");
     const fetchProperties = async () => {
       try {
         const data = await getAllProperties();
-        setProperties(data);
+        setProperties(data || []);
       } catch (err) {
         setError("Failed to load properties. Check backend connection.");
-        console.error(err);
+        console.error("Home fetch error:", err);
       } finally {
         setIsLoading(false);
       }
@@ -100,8 +101,9 @@ const Home = () => {
   };
 
   const filteredProperties = useMemo(() => {
+    if (!properties) return [];
     return properties.filter((p) => {
-      if (appliedSearch && !p.location.toLowerCase().includes(appliedSearch.toLowerCase()) && !p.title.toLowerCase().includes(appliedSearch.toLowerCase())) return false;
+      if (appliedSearch && !p.location?.toLowerCase().includes(appliedSearch.toLowerCase()) && !p.title?.toLowerCase().includes(appliedSearch.toLowerCase())) return false;
       if (appliedSearchType !== "All Types" && p.propertyType !== appliedSearchType) return false;
       if (filterType !== "All Types" && p.propertyType !== filterType) return false;
       if (minPrice && p.price < Number(minPrice)) return false;
@@ -243,6 +245,6 @@ const Home = () => {
       </main>
     </div>
   );
-};
+}
 
 export default Home;

@@ -26,10 +26,11 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
 app:
   jwt:
     secret: ${JWT_SECRET}
-  public-paths:
-    - /api/auth/register
-    - /api/auth/login
-    - /api/properties
+  public-paths: /api/auth/register,/api/auth/login,/api/properties

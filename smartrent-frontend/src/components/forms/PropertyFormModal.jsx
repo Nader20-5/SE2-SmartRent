@@ -17,7 +17,7 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { MdElevator } from "react-icons/md";
-import { createProperty } from "../services/propertyService";
+import { createProperty } from "../../services/propertyService";
 
 const PROPERTY_TYPES = [
   { value: "Apartment", label: "Apartment", icon: FaBuilding },

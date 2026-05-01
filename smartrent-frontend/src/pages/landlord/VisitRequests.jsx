@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getLandlordVisits, approveVisit, rejectVisit } from '../../services/visitService';
 import { toast } from 'react-toastify';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../../components/common/Sidebar';
 import {
   FaCalendarAlt,
   FaCheckCircle,
