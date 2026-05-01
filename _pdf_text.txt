@@ -1,0 +1,627 @@
+SmartRent
+m Division — 7 People
+5 Coders · 2 SRS Writer
+Backend Coders
+2
+SRS Writers4
+Microservices24+
+Methods to
+Implement
+user-service :8081
+Auth · Profiles · Admin
+property-service :8082
+Listings · Reviews · Favorites
+visit-service :8083
+Booking · Scheduling
+rental-service :8084
+Applications · Documents
+
+---PAGE---
+Who works on what
+#
+Role
+Service
+Files to Implement
+C1
+Coder 1 — Auth + User Service
+user-service :8081
+AuthServiceImpl.java · UserServiceImpl.java ·
+JwtUtil.java
+C2
+Coder 2 — Property Service
+property-service :8082
+PropertyServiceImpl.java ·
+FileStorageService.java
+C3
+Coder 3 — Reviews + Favorites
+property-service :8082
+ReviewServiceImpl.java ·
+FavoriteServiceImpl.java
+C4
+Coder 4 — Visit Service
+visit-service :8083
+VisitServiceImpl.java
+C5
+Coder 5 — Rental Service +
+Admin
+rental-service :8084 ·
+user-service :8081
+RentalServiceImpl.java ·
+AdminServiceImpl.java
+S1
+SRS Writer 1 — Written
+Sections
+Documentation
+Sections 1–4: Introduction, Description,
+FR-01–42, NFR
+S2
+SRS Writer 2 — Diagrams
+Documentation
+Use Case · Class · Sequence (×4) · Activity
+(×2)
+C2 and C3 both work in property-service. Coordinate on GlobalExceptionHandler: C2 creates it first, C3 adds their
+exceptions in a separate commit.
+
+---PAGE---
+C1 — Auth + User Service
+C1
+Auth + User Service
+Service: user-service · Port: 8081 · DB: users_db
+Files to Implement
+backend/user-service/src/main/java/.../auth/service/impl/AuthServiceImpl.java
+backend/user-service/src/main/java/.../user/service/impl/UserServiceImpl.java
+backend/user-service/src/main/java/.../security/JwtUtil.java
+AuthServiceImpl
+register(RegisterDto dto)
+Email check
+findByEmail() → UserAlreadyExistsException if taken
+Hash password
+BCryptPasswordEncoder.encode(dto.password)
+Set status
+LANDLORD → PENDING · everyone else → ACTIVE
+Save
+Build User entity and persist
+Generate token
+JwtUtil.generateToken(user)
+Return
+AuthResponseDto { token, userId, role, email, firstName }
+login(LoginDto dto)
+Find user
+findByEmail() → InvalidCredentialsException if absent
+Verify password
+BCrypt.matches(raw, hash) → InvalidCredentialsException if mismatch
+Status guard
+status == ACTIVE · else AccountNotApprovedException
+Generate token
+JwtUtil.generateToken(user)
+Return
+AuthResponseDto
+JwtUtil.generateToken(User user)
+subject = userId.toString() // claim 'sub'
+claim 'role' = user.role.name()
+claim 'email' = user.email
+issuedAt = Instant.now()
+expiry = now + expirationMs (e.g. 86400000 = 24 h)
+sign = HS256 + JWT_SECRET
+UserServiceImpl
+getOwnProfile(Long userId)
+Find
+findById(userId) → UserNotFoundException
+
+---PAGE---
+Return
+Map entity → UserResponseDto
+updateOwnProfile(Long userId, UpdateProfileDto dto)
+Find
+findById(userId) → UserNotFoundException
+Patch fields
+firstName, lastName, phone, profilePictureUrl — skip nulls
+Save
+Persist and return UserResponseDto
+getUserInternal(Long userId) ← called by Feign from other services
+Find
+findById(userId) → UserNotFoundException
+Return
+UserResponseDto — never throw 500 — other services depend on this
+Implement getUserInternal() FIRST. C2, C3, C4, C5 all call it via Feign. A 500 here breaks the entire platform.
+Coordinate with the Gateway team: extractUserId(), extractRole(), extractEmail() must read the same claim names you
+set here: 'sub', 'role', 'email'.
+
+---PAGE---
+C2 — Property Service
+C2
+Property Service — Core Listings
+Service: property-service · Port: 8082 · DB: properties_db
+Files to Implement
+backend/property-service/.../property/service/impl/PropertyServiceImpl.java
+backend/property-service/.../storage/FileStorageService.java (create if absent)
+PropertyServiceImpl
+searchProperties(filters, Pageable)
+Base filter
+Always: status = APPROVED AND is_available = true
+Optional
+city, type, minRent, maxRent, amenities list
+Implementation
+JpaSpecificationExecutor — chain .and() only for non-null params
+Enrich
+Feign → UserServiceClient.getUserInternal() for landlord name
+Return
+Page
+createProperty(Long landlordId, CreatePropertyDto dto)
+Verify landlord
+UserServiceClient → status must be ACTIVE
+Build entity
+Map dto, set landlordId, status=PENDING, isAvailable=true
+Amenities
+Delete existing, re-save PropertyAmenity list
+Return
+PropertyResponseDto
+updateProperty(landlordId, propertyId, dto)
+Ownership
+findByIdAndLandlordId() → UnauthorizedOwnerException
+Update
+Allowed fields only — never change status or landlordId
+Amenities
+Clear and re-save
+Return
+Updated PropertyResponseDto
+deleteProperty(landlordId, propertyId)
+Ownership
+findByIdAndLandlordId() → UnauthorizedOwnerException
+Delete
+Cascade removes property_images and property_amenities
+uploadImages(landlordId, propertyId, List)
+Ownership
+findByIdAndLandlordId()
+MIME check
+Accept only image/jpeg and image/png
+
+---PAGE---
+Save file
+UUID + original extension → uploads/ directory
+Main image
+First upload → isMain=true if no image exists yet
+Return
+Updated PropertyResponseDto
+updatePropertyStatus(propertyId, dto) — Admin only
+Find
+findById() → PropertyNotFoundException
+Set
+status from dto, rejectionReason if REJECTED
+Return
+PropertyResponseDto
+getLandlordProperties(Long landlordId)
+Query
+findByLandlordId()
+Return
+List
+Hardest task: searchProperties() — use JpaSpecificationExecutor and build a Specification that chains predicates only
+for non-null filter values.
+Publish PropertySummaryDto by end of Day 1 — C4 and C5 will copy it. Fields: id, landlordId, title, status, isAvailable,
+monthlyRent. Frozen.
+
+---PAGE---
+C3 — Reviews + Favorites
+C3
+Reviews + Favorites
+Service: property-service · Port: 8082 · DB: properties_db
+Files to Implement
+backend/property-service/.../review/service/impl/ReviewServiceImpl.java
+backend/property-service/.../favorite/service/impl/FavoriteServiceImpl.java
+ReviewServiceImpl
+getReviewsByProperty(Long propertyId)
+Query
+findByPropertyId(propertyId)
+Return
+List
+createReview(tenantId, propertyId, dto)
+Find property
+PropertyNotFoundException if absent
+Status check
+property.status must be APPROVED
+Duplicate check
+existsByPropertyIdAndTenantId() → DuplicateReviewException
+Build & save
+Review { tenantId, propertyId, rating, comment }
+Return
+ReviewResponseDto
+updateReview(tenantId, reviewId, dto)
+Find
+findById(reviewId) → ReviewNotFoundException
+Ownership
+review.tenantId == tenantId → UnauthorizedOwnerException
+Update
+rating, comment → save
+Return
+ReviewResponseDto
+deleteReview(tenantId, reviewId)
+Find
+findById(reviewId) → ReviewNotFoundException
+Ownership
+review.tenantId == tenantId → UnauthorizedOwnerException
+Delete
+Remove entity
+FavoriteServiceImpl
+getFavorites(Long tenantId)
+Query
+findByTenantId()
+Enrich
+Load full Property via PropertyRepository for each favorite
+
+---PAGE---
+Return
+List
+addFavorite(tenantId, propertyId)
+Find property
+PropertyNotFoundException if absent
+Status check
+property.status must be APPROVED
+Duplicate check
+existsByTenantIdAndPropertyId() → DuplicateFavoriteException
+Save
+Build and persist Favorite entity
+removeFavorite(tenantId, propertyId)
+Find
+findByTenantIdAndPropertyId() → FavoriteNotFoundException if absent
+Delete
+Remove entity
+You share property-service with C2. Wait for C2 to merge GlobalExceptionHandler first, then add your own exceptions
+(DuplicateReviewException, ReviewNotFoundException, DuplicateFavoriteException, FavoriteNotFoundException) in
+a separate commit.
+
+---PAGE---
+C4 — Visit Service
+C4
+Visit Service
+Service: visit-service · Port: 8083 · DB: visits_db
+Files to Implement
+backend/visit-service/.../visit/service/impl/VisitServiceImpl.java
+VisitServiceImpl
+createVisit(tenantId, CreateVisitDto dto)
+Verify property
+PropertyServiceClient.getPropertyById() → must be APPROVED
+Extract landlord
+landlordId from PropertySummaryDto
+Conflict check
+existsByPropertyIdAndDateAndTimeAndStatus(APPROVED) → VisitConflictException
+Build entity
+tenantId, landlordId, propertyId, propertyTitle, date/time, status=PENDING
+Return
+VisitResponseDto
+getTenantVisits(Long tenantId)
+Query
+findByTenantId()
+Return
+List
+getLandlordVisits(Long landlordId)
+Query
+findByLandlordId()
+Return
+List
+approveVisit(landlordId, visitId)
+Find
+findById() → VisitNotFoundException
+Ownership
+visit.landlordId == landlordId → UnauthorizedVisitActionException
+Status guard
+visit.status == PENDING → InvalidVisitStatusTransitionException
+Update
+status = APPROVED · save & return
+rejectVisit(landlordId, visitId, UpdateVisitStatusDto dto)
+Same guards
+Ownership + PENDING check
+Update
+status = REJECTED · rejectionReason from dto
+Return
+VisitResponseDto
+rescheduleVisit(landlordId, visitId, dto)
+
+---PAGE---
+Same guards
+Ownership + PENDING check
+Update
+status = RESCHEDULED · suggestedDate, suggestedTime from dto
+Return
+VisitResponseDto
+cancelVisit(tenantId, visitId)
+Find
+findById() → VisitNotFoundException
+Ownership
+visit.tenantId == tenantId → UnauthorizedVisitActionException
+Status guard
+visit.status == PENDING → InvalidVisitStatusTransitionException
+Update
+status = CANCELLED
+Visit-service is the most self-contained — no shared files with anyone. You can develop and test fully independently
+once C1 (Auth) and C2 (Property /internal endpoint) are working.
+Copy PropertySummaryDto from C2 once they publish it on Day 1. Do not change its field names — it is a frozen
+contract.
+
+---PAGE---
+C5 — Rental Service + Admin
+C5
+Rental Service + AdminService
+Services: rental-service :8084 · user-service :8081 · DBs: rentals_db · users_db
+Files to Implement
+backend/rental-service/.../rental/service/impl/RentalServiceImpl.java
+backend/user-service/.../admin/service/impl/AdminServiceImpl.java
+RentalServiceImpl (rental-service)
+createApplication(tenantId, CreateRentalDto dto)
+Verify property
+PropertyServiceClient → status APPROVED AND isAvailable=true
+Extract fields
+landlordId, monthlyRent snapshot from PropertySummaryDto
+Dup check PENDING
+existsByTenantIdAndPropertyIdAndStatus(PENDING) → DuplicateApplicationException
+Dup check APPROVED
+Also check APPROVED → tenant already renting
+Build & save
+Set all fields, status=PENDING
+Return
+RentalResponseDto
+uploadDocuments(tenantId, applicationId, type, file)
+Find
+findByIdAndTenantId() → RentalApplicationNotFoundException
+Status check
+status == PENDING → InvalidApplicationStatusException
+Validate file
+pdf, jpeg, png only
+Save & record
+UUID filename → uploads/ · persist ApplicationDocument
+Return
+Updated RentalResponseDto
+getTenantApplications(Long tenantId)
+Query
+findByTenantId() with documents
+Return
+List
+getLandlordApplications(Long landlordId)
+Query
+findByLandlordId() with documents
+Return
+List
+approveApplication(landlordId, applicationId)
+Find
+findByIdAndLandlordId() → RentalApplicationNotFoundException
+Status check
+status == PENDING → InvalidApplicationStatusException
+
+---PAGE---
+Update
+status=APPROVED · reviewedAt=now() · return
+rejectApplication(landlordId, applicationId, RejectRentalDto dto)
+Find
+findByIdAndLandlordId() → RentalApplicationNotFoundException
+Status check
+status == PENDING → InvalidApplicationStatusException
+Update
+status=REJECTED · rejectionReason · reviewedAt=now() · return
+withdrawApplication(tenantId, applicationId)
+Find
+findByIdAndTenantId() → RentalApplicationNotFoundException
+Status check
+status == PENDING → InvalidApplicationStatusException
+Update
+status = WITHDRAWN
+AdminServiceImpl (user-service)
+getAllUsers(Role role, UserStatus status, Pageable)
+Both filters
+findByRoleAndStatus(role, status, pageable)
+Role only
+findByRole(role, pageable)
+Status only
+findByStatus(status, pageable)
+No filters
+findAll(pageable)
+Return
+Page
+updateUserStatus(Long userId, UpdateUserStatusDto dto)
+Find
+findById() → UserNotFoundException
+Guard
+Cannot deactivate ADMIN → IllegalOperationException
+Update
+Set status from dto · save · return UserResponseDto
+getPlatformStats()
+totalUsers
+userRepository.count()
+totalTenants
+countByRole(TENANT)
+totalLandlords
+countByRole(LANDLORD)
+activeLandlords
+countByRoleAndStatus(LANDLORD, ACTIVE)
+pendingLandlords
+countByRoleAndStatus(LANDLORD, PENDING)
+Return
+AdminStatsDto
+File upload in RentalService must mirror C2's pattern exactly: same UUID naming, same uploads/ path, same directory
+structure. Sync with C2 early on the FileStorageService utility.
+Copy PropertySummaryDto from C2 on Day 1. Fields are frozen.
+
+---PAGE---
+S1 — SRS: Written Sections
+S1
+SRS Writer — Written Sections
+Deliverable: SRS document sections 1–4 · Source: README.md · DATABASE.md · TEAMMATES.md
+1. Introduction
+1.1 Purpose
+State that this SRS defines requirements for SmartRent
+1.2 Scope
+What the platform does (browse, visit, apply, manage) and does not do (payment, chat)
+1.3 Definitions
+JWT, Feign, RBAC, Microservice, DTO, ORM, Eureka, Gateway
+1.4 References
+Spring Boot docs, project README.md, DATABASE.md
+2. Overall Description
+2.1 Perspective
+4 microservices, 4 isolated SQL Server DBs, React frontend, Docker
+2.2 User classes
+Tenant (browse/apply/review), Landlord (list/approve), Admin (moderate)
+2.3 Environment
+Java 21, Spring Boot 3.2.5, SQL Server 2022, Docker Compose
+2.4 Constraints
+JWT stateless auth, no cross-DB SQL joins, services communicate via Feign only
+2.5 Assumptions
+Single region deployment, English language, Docker available
+3. Functional Requirements
+FR-01 – FR-06
+Authentication: register, login, JWT generation, role assignment, status checks
+FR-07 – FR-15
+Property Management: CRUD, image upload, search/filter, admin approval
+FR-16 – FR-22
+Visit Management: create, approve, reject, reschedule, cancel, conflict check
+FR-23 – FR-31
+Rental Applications: create, upload docs, approve, reject, withdraw
+FR-32 – FR-36
+Reviews & Favorites: CRUD reviews, add/remove favorites, one review per tenant
+FR-37 – FR-42
+Admin: list users, update status, platform stats, approve properties/landlords
+4. Non-Functional Requirements
+4.1 Security
+JWT expiry 24h, BCrypt password hashing, HTTPS in production
+4.2 Performance
+Property search results returned in < 2 seconds
+4.3 Scalability
+Each microservice independently deployable and scalable
+4.4 Availability
+Docker health checks, Eureka re-registration on restart
+4.5 Maintainability
+AOP logging, Swagger/OpenAPI docs, MapStruct mappers
+
+---PAGE---
+Number every functional requirement FR-01 through FR-42. Each FR should have: ID, Title, Actor, Precondition, Main
+Flow, Exceptions.
+
+---PAGE---
+S2 — SRS: Diagrams
+S2
+SRS Writer — All Diagrams
+Deliverable: Use Case · Class · 4 Sequence · 2 Activity · Tool: draw.io / Lucidchart / PlantUML
+1 — Use Case Diagram
+Actors & their use cases:
+Tenant
+Register · Login · Browse Properties · View Details · Add/Remove Favorites · Book Visit · Cancel
+Visit · Submit Rental Application · Upload Documents · Withdraw Application · Write Review · Edit
+Review
+Landlord
+Register (→ requires Admin Approval) · Login · Create Property · Edit Property · Delete Property ·
+Upload Images · Manage Visit Requests (approve/reject/reschedule) · Manage Rental Applications
+(approve/reject)
+Admin
+Login · Approve/Suspend Landlord Account · Approve/Reject Property Listing · View Platform
+Stats
+«system» Gateway
+Validate JWT on every protected request · Forward X-User-Id, X-User-Role headers
+Key relationships:
+«include»
+Book Visit «include» View Property Details
+«include»
+Submit Application «include» View Property Details
+«include»
+Approve Visit «include» Manage Visit Requests
+«extend»
+Register as Landlord «extend» Register (adds PENDING status)
+2 — Class Diagram
+Derive all 10 entities directly from DATABASE.md with field names, types, and multiplicities.
+users → properties
+1 landlord to many properties (solid line, landlord_id)
+users → reviews
+1 tenant to many reviews (solid line, tenant_id)
+users → favorites
+1 tenant to many favorites (solid line, tenant_id)
+properties → property_images
+1 to many, CASCADE DELETE
+properties →
+property_amenities
+1 to many, CASCADE DELETE + UNIQUE(property_id, amenity)
+properties → reviews
+1 to many, CASCADE DELETE + UNIQUE(property_id, tenant_id)
+properties → favorites
+1 to many, CASCADE DELETE + UNIQUE(tenant_id, property_id)
+rental_applications →
+application_documents
+1 to many, CASCADE DELETE
+Dashed cross-service lines
+users.id ← visit_requests.{tenant_id, landlord_id} (label: logical FK via Feign)
+
+---PAGE---
+Dashed cross-service lines
+properties.id ← visit_requests.property_id AND rental_applications.property_id
+3 — Sequence Diagrams (× 4)
+SD-01 Tenant
+Registration
+Tenant → Frontend → Gateway (no JWT) → UserService.register() → users_db INSERT →
+return JWT
+SD-02 Landlord Creates a
+Property
+Landlord → Gateway (JWT valid) → Gateway adds X-User-Id/Role headers →
+PropertyService.createProperty() → Feign → UserService.getUserInternal() (verify ACTIVE)
+→ properties_db INSERT (status=PENDING) → return PropertyResponseDto
+SD-03 Tenant Books a
+Visit
+Tenant → Gateway → VisitService.createVisit() → Feign →
+PropertyService.getPropertyById() (verify APPROVED) → conflict check on visits_db →
+INSERT (status=PENDING) → return VisitResponseDto
+SD-04 Landlord Approves
+a Rental Application
+Landlord → Gateway → RentalService.approveApplication() → find in rentals_db → verify
+landlordId + status=PENDING → UPDATE status=APPROVED, reviewed_at=now → return
+RentalResponseDto
+4 — Activity Diagrams (× 2)
+AD-01 Tenant Rental
+Journey
+Start → Login → Browse → Filter → View Details → [Interested?] No→Browse again ·
+Yes→Submit Application → Upload Docs → Wait → [Outcome?] Approved→Move-in ·
+Rejected→[Re-apply?] → End
+AD-02 Landlord
+Onboarding
+Start → Register(PENDING) → Wait Admin → [Approved?] No→End · Yes→status=ACTIVE
+→ Login → Create Property → Upload Images → Property=PENDING → Wait Admin →
+[Approved?] No→Edit&Resubmit; · Yes→Property=APPROVED → Visible to tenants → End
+Recommended tools: draw.io (free, export PNG/SVG), Lucidchart, or PlantUML for code-driven diagrams. Export each
+diagram at 150 DPI minimum and embed in the SRS document.
+
+---PAGE---
+I Critical Coordination Points
+PropertySummaryDto — Frozen on Day 1
+C2 publishes this DTO by end of Day 1. C4 and C5 copy it locally. Any change after that silently breaks two Feign
+clients.
+public class PropertySummaryDto {
+private Long id;
+private Long landlordId;
+private String title;
+private String status; // 'APPROVED', 'PENDING', …
+private Boolean isAvailable;
+private BigDecimal monthlyRent;
+}
+JWT Claim Names
+sub → userId.toString() // extractUserId() in Gateway
+role → user.role.name() // extractRole() in Gateway
+email → user.email // extractEmail() in Gateway
+GlobalExceptionHandler Merge Order (property-service)
+C2 first
+Creates GlobalExceptionHandler with property exceptions and merges to main
+C3 second
+Adds DuplicateReviewException, ReviewNotFoundException, DuplicateFavoriteException,
+FavoriteNotFoundException in a separate commit
+File Upload Pattern (C2 sets, C5 mirrors)
+Naming
+UUID + original extension e.g. a3f2…b1.jpg
+Directory
+uploads/ (configured via FileStorageConfig)
+Utility
+C2 writes the save helper; C5 copies the same method signature
+MIME check
+PropertyService: jpeg, png only · RentalService: pdf, jpeg, png
+Dependency Chain
+C1 getUserInternal
+Must work FIRST — C2, C3, C4, C5 all call it via Feign
+C2 PropertySummaryDto
+Must be published Day 1 — C4, C5 copy it
+C2 Property /internal
+Must be up — C4 calls it via Feign in createVisit()
+C1 Auth JWT
+Must be working — all other services validate role headers
+S1 + S2
+Independent — can be written in parallel with coding

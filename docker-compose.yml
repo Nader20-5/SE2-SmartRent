@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+
+  eureka-server:
+    build: ./backend/eureka-server
+    ports: ["8761:8761"]
+    networks: [smartrent-network]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  api-gateway:
+    build: ./backend/api-gateway
+    ports: ["8080:8080"]
+    depends_on: [eureka-server]
+    environment:
+      - EUREKA_URI=http://eureka-server:8761/eureka
+      - JWT_SECRET=${JWT_SECRET}
+    networks: [smartrent-network]
+
+  users-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: ${DB_ROOT_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_DB: users_db
+    volumes: [users_data:/var/opt/mssql]
+    networks: [smartrent-network]
+    ports: ["1433:1433"]
+
+  user-service:
+    build: ./backend/user-service
+    depends_on: [users-db, eureka-server]
+    environment:
+      - DB_HOST=users-db
+      - DB_PASSWORD=${DB_ROOT_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - EUREKA_URI=http://eureka-server:8761/eureka
+    networks: [smartrent-network]
+
+  properties-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: ${DB_ROOT_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_DB: properties_db
+    volumes: [properties_data:/var/opt/mssql]
+    networks: [smartrent-network]
+
+  property-service:
+    build: ./backend/property-service
+    depends_on: [properties-db, eureka-server]
+    environment:
+      - DB_HOST=properties-db
+      - DB_PASSWORD=${DB_ROOT_PASSWORD}
+      - EUREKA_URI=http://eureka-server:8761/eureka
+    volumes: [uploads_data:/app/uploads]
+    networks: [smartrent-network]
+
+  visits-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: ${DB_ROOT_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_DB: visits_db
+    volumes: [visits_data:/var/opt/mssql]
+    networks: [smartrent-network]
+
+  visit-service:
+    build: ./backend/visit-service
+    depends_on: [visits-db, eureka-server]
+    environment:
+      - DB_HOST=visits-db
+      - DB_PASSWORD=${DB_ROOT_PASSWORD}
+      - EUREKA_URI=http://eureka-server:8761/eureka
+    networks: [smartrent-network]
+
+  rentals-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: ${DB_ROOT_PASSWORD}
+      ACCEPT_EULA: "Y"
+      MSSQL_DB: rentals_db
+    volumes: [rentals_data:/var/opt/mssql]
+    networks: [smartrent-network]
+
+  rental-service:
+    build: ./backend/rental-service
+    depends_on: [rentals-db, eureka-server]
+    environment:
+      - DB_HOST=rentals-db
+      - DB_PASSWORD=${DB_ROOT_PASSWORD}
+      - EUREKA_URI=http://eureka-server:8761/eureka
+    volumes: [uploads_data:/app/uploads]
+    networks: [smartrent-network]
+
+  frontend:
+    build: ./smartrent-frontend
+    ports: ["3000:80"]
+    networks: [smartrent-network]
+
+volumes:
+  users_data:
+  properties_data:
+  visits_data:
+  rentals_data:
+  uploads_data:
+
+networks:
+  smartrent-network:
+    driver: bridge
