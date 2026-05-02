@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 public class RejectVisitDto {
 
     @NotBlank
-    private String rejectionReason;
+    private String reason;
 }

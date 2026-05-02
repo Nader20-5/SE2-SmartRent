@@ -4,6 +4,9 @@ import com.smartrent.gateway.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -24,17 +27,41 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            // TODO: check if path is public; if so, chain.filter(exchange)
-            // TODO: extract Authorization header
-            // TODO: validate JWT via jwtUtil
-            // TODO: if invalid, return 401
-            // TODO: extract userId, role, email claims and add as X-User-Id, X-User-Role, X-User-Email headers
-            // TODO: chain.filter(mutated exchange)
-            return chain.filter(exchange);
+            ServerHttpRequest request = exchange.getRequest();
+            String path = request.getURI().getPath();
+
+            // 1. Check if path is public
+            boolean isPublic = publicPaths.stream().anyMatch(path::startsWith);
+            
+            String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+            if (isPublic && (authHeader == null || !authHeader.startsWith("Bearer "))) {
+                return chain.filter(exchange);
+            }
+
+            // 2. Extract and validate token
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+
+            String token = authHeader.substring(7);
+            if (!jwtUtil.validateToken(token)) {
+                exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                return exchange.getResponse().setComplete();
+            }
+
+            // 3. Propagate headers
+            ServerHttpRequest mutatedRequest = request.mutate()
+                    .header("X-User-Id", jwtUtil.extractUserId(token))
+                    .header("X-User-Role", jwtUtil.extractRole(token))
+                    .header("X-User-Email", jwtUtil.extractEmail(token))
+                    .build();
+
+            return chain.filter(exchange.mutate().request(mutatedRequest).build());
         };
     }
 
     public static class Config {
-        // Empty config class
     }
 }

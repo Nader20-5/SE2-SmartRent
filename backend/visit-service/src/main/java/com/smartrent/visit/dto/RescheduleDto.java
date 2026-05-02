@@ -20,4 +20,6 @@ public class RescheduleDto {
 
     @NotNull
     private LocalTime suggestedTime;
+
+    private String notes;
 }

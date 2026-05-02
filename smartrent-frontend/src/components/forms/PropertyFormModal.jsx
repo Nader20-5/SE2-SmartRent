@@ -17,11 +17,12 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { MdElevator } from "react-icons/md";
-import { createProperty } from "../../services/propertyService";
+import { createProperty, updateProperty, uploadPropertyImages } from "../../services/propertyService";
 
 const PROPERTY_TYPES = [
   { value: "Apartment", label: "Apartment", icon: FaBuilding },
-  { value: "House", label: "House", icon: FaHome },
+  { value: "Office", label: "Office", icon: FaBuilding },
+  { value: "Room", label: "Room", icon: FaHome },
   { value: "Villa", label: "Villa", icon: FaHotel },
   { value: "Studio", label: "Studio", icon: FaDoorOpen },
 ];
@@ -207,24 +208,44 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
     setSuccessMsg("");
 
     try {
-      // Build FormData for multipart/form-data
-      const fd = new FormData();
-      fd.append("Title", formData.title);
-      fd.append("Description", formData.description);
-      fd.append("PropertyType", formData.propertyType);
-      fd.append("Price", Number(formData.price));
-      fd.append("Location", formData.location);
-      fd.append("HasParking", formData.amenities.hasParking);
-      fd.append("HasElevator", formData.amenities.hasElevator);
-      fd.append("IsFurnished", formData.amenities.isFurnished);
-      fd.append("HasPool", formData.amenities.hasPool);
+      const amenitiesList = [];
+      if (formData.amenities.hasParking) amenitiesList.push("PARKING");
+      if (formData.amenities.hasPool) amenitiesList.push("POOL");
+      if (formData.amenities.hasElevator) amenitiesList.push("ELEVATOR");
+      if (formData.amenities.isFurnished) amenitiesList.push("FURNISHED");
 
-      newImageFiles.forEach((img) => {
-        fd.append("Images", img.file);
-      });
+      const propertyData = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.propertyType.toUpperCase(),
+        monthlyRent: Number(formData.price),
+        city: formData.location.split(',')[0].trim(),
+        address: formData.location,
+        amenities: amenitiesList,
+        bedrooms: property?.bedrooms || 0,
+        bathrooms: property?.bathrooms || 0,
+        areaSqm: property?.areaSqm || 0,
+        floor: property?.floor || 1
+      };
 
-      await createProperty(fd);
-      setSuccessMsg("Property submitted successfully! Please wait for admin approval.");
+      let propertyId;
+      if (isEditMode) {
+        const updated = await updateProperty(property.id, propertyData);
+        propertyId = updated.id;
+        setSuccessMsg("Property updated successfully!");
+      } else {
+        const created = await createProperty(propertyData);
+        propertyId = created.id;
+        setSuccessMsg("Property submitted successfully! Please wait for admin approval.");
+      }
+
+      if (newImageFiles.length > 0) {
+        const imageFd = new FormData();
+        newImageFiles.forEach((img) => {
+          imageFd.append("files", img.file);
+        });
+        await uploadPropertyImages(propertyId, imageFd);
+      }
 
       // Notify parent to refresh + close after delay
       setTimeout(() => {
@@ -233,8 +254,8 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
         setSuccessMsg("");
       }, 2500);
     } catch (err) {
-      console.error("Failed to create property:", err);
-      setSubmitError(err.response?.data?.message || "Failed to create property. Please try again.");
+      console.error("Failed to save property:", err);
+      setSubmitError(err.response?.data?.message || "Failed to save property. Please try again.");
     } finally {
       setSubmitting(false);
     }

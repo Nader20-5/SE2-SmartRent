@@ -4,6 +4,8 @@ import {
   getAllUsers,
   updateUserStatus,
   getPlatformStats,
+  getAllPropertiesAdmin,
+  updatePropertyStatusAdmin,
 } from "../../services/adminService";
 
 import "./AdminDashboard.css";
@@ -46,6 +48,9 @@ const AdminDashboard = () => {
 
   // Data state
   const [allUsers, setAllUsers] = useState([]);
+  const [pendingUsers, setPendingUsers] = useState([]);
+  const [pendingProperties, setPendingProperties] = useState([]);
+  const [allProperties, setAllProperties] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeLandlords: 0,
@@ -68,12 +73,18 @@ const AdminDashboard = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsData, usersData] = await Promise.all([
+      const [statsData, usersData, pendingUsersData, propertiesData, pendingPropsData] = await Promise.all([
         getPlatformStats(),
         getAllUsers({ page: 0, size: 100 }),
+        getAllUsers({ page: 0, size: 100, status: "PENDING", role: "LANDLORD" }),
+        getAllPropertiesAdmin({ page: 0, size: 100 }),
+        getAllPropertiesAdmin({ page: 0, size: 100, status: "PENDING" }),
       ]);
       setStats(statsData || { totalUsers: 0, activeLandlords: 0, totalProperties: 0, pendingApprovals: 0 });
       setAllUsers(usersData?.content || usersData || []);
+      setPendingUsers(pendingUsersData?.content || pendingUsersData || []);
+      setAllProperties(propertiesData?.content || propertiesData || []);
+      setPendingProperties(pendingPropsData?.content || pendingPropsData || []);
     } catch (error) {
       console.error("Failed to fetch admin data:", error);
     } finally {
@@ -103,6 +114,32 @@ const AdminDashboard = () => {
       setAlert({ type: "success", message: `User "${name}" status updated successfully.` });
     } catch (error) {
       setAlert({ type: "error", message: `Failed to update status for user "${name}".` });
+    } finally {
+      setActionInProgress(null);
+    }
+  };
+
+  const handleUpdatePropertyStatus = async (id, title, status) => {
+    setActionInProgress(`prop-status-${id}`);
+    try {
+      await updatePropertyStatusAdmin(id, status, status === "REJECTED" ? "Admin rejected" : "");
+      
+      // Update local states
+      if (status === "APPROVED") {
+        const propToMove = pendingProperties.find(p => p.id === id);
+        if (propToMove) {
+           setPendingProperties(prev => prev.filter(p => p.id !== id));
+           setAllProperties(prev => prev.map(p => p.id === id ? { ...p, status: "APPROVED" } : p));
+        }
+      } else if (status === "REJECTED") {
+        setPendingProperties(prev => prev.filter(p => p.id !== id));
+        setAllProperties(prev => prev.map(p => p.id === id ? { ...p, status: "REJECTED" } : p));
+      }
+      
+      setAlert({ type: "success", message: `Property "${title}" has been ${status}.` });
+      fetchData(); // refresh stats
+    } catch (error) {
+      setAlert({ type: "error", message: `Failed to update property "${title}".` });
     } finally {
       setActionInProgress(null);
     }
@@ -152,6 +189,30 @@ const AdminDashboard = () => {
               </svg>
             </span>
             All Users
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === "pending-users" ? "active" : ""}`} 
+            onClick={() => setActiveTab("pending-users")}
+          >
+            <span className="sidebar-nav-icon">⏳</span>
+            Pending Landlords
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === "all-properties" ? "active" : ""}`} 
+            onClick={() => setActiveTab("all-properties")}
+          >
+            <span className="sidebar-nav-icon">🏠</span>
+            All Properties
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === "pending-properties" ? "active" : ""}`} 
+            onClick={() => setActiveTab("pending-properties")}
+          >
+            <span className="sidebar-nav-icon">⚠️</span>
+            Pending Properties
           </button>
 
 
@@ -293,6 +354,69 @@ const AdminDashboard = () => {
                               >
                                {u.status === "ACTIVE" ? "Suspend" : "Activate"}
                              </button>
+                           </div>
+                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+          ) : activeTab === "pending-users" ? (
+            <div className="admin-table-wrapper">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Landlord</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {pendingUsers.length === 0 ? <tr><td colSpan="4">No pending landlords.</td></tr> : pendingUsers.map((u) => (
+                      <tr key={u.id}>
+                         <td><div className="table-name">{u.firstName} {u.lastName}</div></td>
+                         <td>{u.email}</td>
+                         <td><span className="status-badge pending">PENDING</span></td>
+                         <td>
+                           <div className="admin-actions">
+                             <button className="btn-approve" onClick={() => handleToggleUserStatus(u.id, u.firstName, "PENDING")} disabled={!!actionInProgress}>Approve</button>
+                           </div>
+                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+          ) : activeTab === "all-properties" ? (
+            <div className="admin-table-wrapper">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Property</th><th>Location</th><th>Rent</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    {allProperties.map((p) => (
+                      <tr key={p.id}>
+                         <td><div className="table-name">{p.title}</div><div className="table-id">{p.type}</div></td>
+                         <td>{p.city}</td>
+                         <td>{formatPrice(p.monthlyRent)}</td>
+                         <td><span className={`status-badge ${p.status?.toLowerCase()}`}>{p.status}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+          ) : activeTab === "pending-properties" ? (
+            <div className="admin-table-wrapper">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>Property</th><th>Location</th><th>Rent</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody>
+                    {pendingProperties.length === 0 ? <tr><td colSpan="4">No pending properties.</td></tr> : pendingProperties.map((p) => (
+                      <tr key={p.id}>
+                         <td><div className="table-name">{p.title}</div></td>
+                         <td>{p.city}</td>
+                         <td>{formatPrice(p.monthlyRent)}</td>
+                         <td>
+                           <div className="admin-actions">
+                             <button className="btn-approve" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "APPROVED")} disabled={!!actionInProgress}>Approve</button>
+                             <button className="btn-reject" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "REJECTED")} disabled={!!actionInProgress}>Reject</button>
                            </div>
                          </td>
                       </tr>

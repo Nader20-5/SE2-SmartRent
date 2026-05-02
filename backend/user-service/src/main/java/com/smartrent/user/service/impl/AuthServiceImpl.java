@@ -4,7 +4,6 @@ import com.smartrent.user.dto.*;
 import com.smartrent.user.exception.AccountNotApprovedException;
 import com.smartrent.user.exception.InvalidCredentialsException;
 import com.smartrent.user.exception.UserAlreadyExistsException;
-import com.smartrent.user.exception.UserNotFoundException;
 import com.smartrent.user.mapper.UserMapper;
 import com.smartrent.user.model.Role;
 import com.smartrent.user.model.User;
@@ -90,44 +89,4 @@ public class AuthServiceImpl implements IAuthService {
                 .build();
     }
 
-    @Override
-    public UserResponseDto getOwnProfile(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        return userMapper.toResponseDto(user);
-    }
-
-    @Override
-    @Transactional
-    public UserResponseDto updateOwnProfile(Long userId, UpdateProfileDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-
-        // Patch fields — skip nulls
-        if (dto.getFirstName() != null) {
-            user.setFirstName(dto.getFirstName());
-        }
-        if (dto.getLastName() != null) {
-            user.setLastName(dto.getLastName());
-        }
-        if (dto.getPhone() != null) {
-            user.setPhone(dto.getPhone());
-        }
-        if (dto.getProfilePictureUrl() != null) {
-            user.setProfilePictureUrl(dto.getProfilePictureUrl());
-        }
-
-        user = userRepository.save(user);
-        return userMapper.toResponseDto(user);
-    }
-
-    /**
-     * Internal endpoint called by Feign from other services.
-     * Must never throw 500 — other services depend on this.
-     */
-    public UserResponseDto getUserInternal(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
-        return userMapper.toResponseDto(user);
-    }
 }

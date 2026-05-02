@@ -243,6 +243,27 @@ public class PropertyServiceImpl implements IPropertyService {
         return propertyMapper.toSummaryDto(property);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Long> getPropertyStats() {
+        java.util.Map<String, Long> stats = new java.util.HashMap<>();
+        stats.put("totalProperties", propertyRepository.count());
+        stats.put("pendingApprovals", propertyRepository.countByStatus(PropertyStatus.PENDING));
+        return stats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PropertyResponseDto> getAllPropertiesForAdmin(PropertyStatus status, Pageable pageable) {
+        Page<Property> page;
+        if (status != null) {
+            page = propertyRepository.findByStatus(status, pageable);
+        } else {
+            page = propertyRepository.findAll(pageable);
+        }
+        return page.map(this::enrichResponse);
+    }
+
     // ══════════════════════════════════════════════════════════════
     //  PRIVATE HELPERS
     // ══════════════════════════════════════════════════════════════

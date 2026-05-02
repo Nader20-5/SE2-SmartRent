@@ -39,11 +39,11 @@ const PropertyCard = ({
   const navigate = useNavigate();
   const [isFav, setIsFav] = useState(property.isFavorite);
 
-  const mainImage =
-    property.images?.find((img) => img.isMain) || property.images?.[0];
+  const mainImage = property.mainImageUrl || property.imageUrls?.[0];
 
+  // Map backend amenities (List of strings) to local config
   const activeAmenities = AMENITY_CONFIG.filter(
-    (a) => property.amenities?.[a.key]
+    (a) => property.amenities?.includes(a.key.toUpperCase()) || property.amenities?.includes(a.key)
   );
 
   const handleFavoriteClick = (e) => {
@@ -85,7 +85,7 @@ const PropertyCard = ({
       {/* ── Image Section ── */}
       <div className="property-card-image-wrapper">
         <img
-          src={mainImage?.imageUrl}
+          src={mainImage}
           alt={property.title}
           className="property-card-image"
           loading="lazy"
@@ -99,29 +99,25 @@ const PropertyCard = ({
           {/* Rental Status */}
           <span
             className={`property-card-tag ${
-              property.rentalStatus === "Available" ? "tag-success" : "tag-info"
+              property.isAvailable ? "tag-success" : "tag-info"
             }`}
           >
-            {property.rentalStatus === "Available" && <span className="status-dot"></span>}
-            {property.rentalStatus}
+            {property.isAvailable && <span className="status-dot"></span>}
+            {property.isAvailable ? "Available" : "Unavailable"}
           </span>
 
           {/* Admin Approval Status */}
           {variant === "landlord" && (
             <span
               className={`property-card-tag ${
-                property.isApproved
+                property.status === "APPROVED"
                   ? "tag-success"
-                  : !property.isActive
+                  : property.status === "REJECTED"
                   ? "tag-error"
                   : "tag-warning"
               }`}
             >
-              {property.isApproved
-                ? "Approved"
-                : !property.isActive
-                ? "Rejected"
-                : "Pending"}
+              {property.status}
             </span>
           )}
         </div>
@@ -139,10 +135,10 @@ const PropertyCard = ({
         )}
 
         {/* Rating overlay */}
-        {property.rating && (
+        {property.averageRating > 0 && (
           <div className="property-card-rating">
             <FaStar className="property-card-star-icon" />
-            <span>{property.rating.averageScore.toFixed(1)}</span>
+            <span>{property.averageRating.toFixed(1)}</span>
           </div>
         )}
       </div>
@@ -151,14 +147,14 @@ const PropertyCard = ({
       <div className="property-card-content">
         <div className="property-card-header">
           <h3 className="property-card-title">{property.title}</h3>
-          <span className="property-card-type">{property.propertyType}</span>
+          <span className="property-card-type">{property.type}</span>
         </div>
 
-        <p className="property-card-price">{formatPrice(property.price)}</p>
+        <p className="property-card-price">{formatPrice(property.monthlyRent || 0)}</p>
 
         <p className="property-card-location">
           <FaMapMarkerAlt className="property-card-pin-icon" />
-          <span>{property.location}</span>
+          <span>{property.city}{property.district ? `, ${property.district}` : ''}</span>
         </p>
 
         {/* Amenity row — only render amenities with value true */}

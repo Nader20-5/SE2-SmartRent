@@ -20,38 +20,34 @@ public class VisitController {
     public ResponseEntity<VisitResponseDto> createVisit(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody CreateVisitDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.createVisit(userId, dto));
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<VisitResponseDto>> getTenantVisits(
             @RequestHeader("X-User-Id") Long userId) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.getTenantVisits(userId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelVisit(
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id) {
-        // TODO: implement
-        return null;
+        visitService.cancelVisit(userId, id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/landlord")
     public ResponseEntity<List<VisitResponseDto>> getLandlordVisits(
             @RequestHeader("X-User-Id") Long userId) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.getLandlordVisits(userId));
     }
 
     @PatchMapping("/{id}/approve")
     public ResponseEntity<VisitResponseDto> approveVisit(
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.approveVisit(userId, id));
     }
 
     @PatchMapping("/{id}/reject")
@@ -59,8 +55,7 @@ public class VisitController {
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id,
             @Valid @RequestBody RejectVisitDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.rejectVisit(userId, id, dto));
     }
 
     @PatchMapping("/{id}/reschedule")
@@ -68,7 +63,6 @@ public class VisitController {
             @RequestHeader("X-User-Id") Long userId,
             @PathVariable Long id,
             @Valid @RequestBody RescheduleDto dto) {
-        // TODO: implement
-        return null;
+        return ResponseEntity.ok(visitService.rescheduleVisit(userId, id, dto));
     }
 }

@@ -2,7 +2,7 @@ import api from "./api";
 
 export const getAllProperties = async (params) => {
   const response = await api.get("/properties", { params });
-  return response.data;
+  return response.data.content || response.data;
 };
 
 export const getPropertyById = async (id) => {
@@ -11,9 +11,7 @@ export const getPropertyById = async (id) => {
 };
 
 export const createProperty = async (data) => {
-  const response = await api.post("/properties", data, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const response = await api.post("/properties", data);
   return response.data;
 };
 
@@ -29,7 +27,7 @@ export const deleteProperty = async (id) => {
 
 export const getMyProperties = async (params) => {
   const response = await api.get("/properties/landlord/me", { params });
-  return response.data;
+  return response.data.content || response.data;
 };
 
 export const uploadPropertyImages = async (id, formData) => {

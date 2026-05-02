@@ -101,13 +101,23 @@ function Home() {
   };
 
   const filteredProperties = useMemo(() => {
-    if (!properties) return [];
+    if (!properties || !Array.isArray(properties)) return [];
     return properties.filter((p) => {
-      if (appliedSearch && !p.location?.toLowerCase().includes(appliedSearch.toLowerCase()) && !p.title?.toLowerCase().includes(appliedSearch.toLowerCase())) return false;
-      if (appliedSearchType !== "All Types" && p.propertyType !== appliedSearchType) return false;
-      if (filterType !== "All Types" && p.propertyType !== filterType) return false;
-      if (minPrice && p.price < Number(minPrice)) return false;
-      if (maxPrice && p.price > Number(maxPrice)) return false;
+      // Backend uses 'city' and 'title'. We search in both.
+      const searchStr = appliedSearch.toLowerCase();
+      if (appliedSearch && 
+          !p.city?.toLowerCase().includes(searchStr) && 
+          !p.title?.toLowerCase().includes(searchStr) &&
+          !p.address?.toLowerCase().includes(searchStr)) return false;
+
+      // Backend uses 'type' (Enum like APARTMENT)
+      if (appliedSearchType !== "All Types" && p.type !== appliedSearchType.toUpperCase()) return false;
+      if (filterType !== "All Types" && p.type !== filterType.toUpperCase()) return false;
+
+      // Backend uses 'monthlyRent'
+      if (minPrice && p.monthlyRent < Number(minPrice)) return false;
+      if (maxPrice && p.monthlyRent > Number(maxPrice)) return false;
+      
       return true;
     });
   }, [properties, appliedSearch, appliedSearchType, filterType, minPrice, maxPrice]);

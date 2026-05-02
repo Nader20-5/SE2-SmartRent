@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   FaMapMarkerAlt,
@@ -29,20 +29,27 @@ import { useAuth } from "../../context/AuthContext";
 import { getPropertyById } from "../../services/propertyService";
 
 const AMENITY_CONFIG = [
-  { key: "hasParking", label: "Parking", icon: FaParking },
-  { key: "hasElevator", label: "Elevator", icon: MdElevator },
-  { key: "isFurnished", label: "Furnished", icon: FaCouch },
-  { key: "hasPool", label: "Pool", icon: FaSwimmingPool },
+  { key: "PARKING", label: "Parking", icon: FaParking },
+  { key: "ELEVATOR", label: "Elevator", icon: MdElevator },
+  { key: "FURNISHED", label: "Furnished", icon: FaCouch },
+  { key: "POOL", label: "Pool", icon: FaSwimmingPool },
+  { key: "GYM", label: "Gym", icon: FaBuilding },
+  { key: "SECURITY", label: "Security", icon: FaCheckCircle },
+  { key: "GARDEN", label: "Garden", icon: FaCouch },
+  { key: "BALCONY", label: "Balcony", icon: FaBuilding },
+  { key: "AIR_CONDITIONING", label: "AC", icon: FaCouch },
+  { key: "CENTRAL_HEATING", label: "Heating", icon: FaCouch },
 ];
 
 
 const formatPrice = (price) =>
-  `$${price.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  `${(price || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} EGP`;
 
 const renderStars = (score) => {
   const stars = [];
-  const fullStars = Math.floor(score);
-  const hasHalf = score - fullStars >= 0.25 && score - fullStars < 0.75;
+  const s = score || 0;
+  const fullStars = Math.floor(s);
+  const hasHalf = s - fullStars >= 0.25 && s - fullStars < 0.75;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
   for (let i = 0; i < fullStars; i++) stars.push(<FaStar key={`full-${i}`} className="star-icon star-filled" />);
@@ -53,8 +60,9 @@ const renderStars = (score) => {
 
 const PropertyDetails = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [property, setProperty] = useState(null);
-  const [activeImageUrl, setActiveImageUrl] = useState(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -98,9 +106,14 @@ const PropertyDetails = () => {
     );
   }
 
-  const mainImage = property.images?.find((img) => img.isMain) || property.images?.[0];
-  const currentImage = activeImageUrl || mainImage?.imageUrl;
-  const thumbnails = property.images || [];
+  // Map backend fields
+  const imageUrls = property.imageUrls || [];
+  const currentImage = imageUrls[activeImageIndex] || property.mainImageUrl;
+  const location = [property.city, property.district].filter(Boolean).join(", ");
+
+  // Amenities from backend are a list of strings like ["PARKING", "POOL"]
+  const amenities = property.amenities || [];
+  const activeAmenities = AMENITY_CONFIG.filter((a) => amenities.includes(a.key));
 
   return (
     <div className="page-wrapper">
@@ -119,24 +132,32 @@ const PropertyDetails = () => {
             {/* Image Gallery */}
             <section className="detail-gallery" id="detail-gallery">
               <div className="detail-gallery-main">
-                <img src={currentImage} alt={property.title} className="detail-gallery-main-image" />
+                {currentImage ? (
+                  <img src={currentImage} alt={property.title} className="detail-gallery-main-image" />
+                ) : (
+                  <div className="detail-gallery-main-image" style={{
+                    background: "var(--color-bg-secondary)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    minHeight: 300, borderRadius: "var(--radius-lg)", color: "var(--color-text-muted)"
+                  }}>No images available</div>
+                )}
                 <div className="property-card-tags">
-                  <span className={`property-card-tag ${property.rentalStatus === 'Available' ? 'tag-success' : 'tag-info'}`}>
-                    {property.rentalStatus === 'Available' && <span className="status-dot"></span>}
-                    {property.rentalStatus}
+                  <span className={`property-card-tag ${property.isAvailable ? 'tag-success' : 'tag-info'}`}>
+                    {property.isAvailable && <span className="status-dot"></span>}
+                    {property.isAvailable ? 'Available' : 'Unavailable'}
                   </span>
                 </div>
               </div>
-              {thumbnails.length > 1 && (
+              {imageUrls.length > 1 && (
                 <div className="detail-gallery-thumbnails">
-                  {thumbnails.map((img) => (
+                  {imageUrls.map((url, index) => (
                     <button
-                      key={img.id}
-                      className={`detail-gallery-thumb ${(activeImageUrl || mainImage?.imageUrl) === img.imageUrl ? "is-active" : ""}`}
-                      onClick={() => setActiveImageUrl(img.imageUrl)}
-                      aria-label={`View image ${img.id}`}
+                      key={index}
+                      className={`detail-gallery-thumb ${activeImageIndex === index ? "is-active" : ""}`}
+                      onClick={() => setActiveImageIndex(index)}
+                      aria-label={`View image ${index + 1}`}
                     >
-                      <img src={img.imageUrl} alt={`${property.title} thumbnail`} className="detail-gallery-thumb-image" loading="lazy" />
+                      <img src={url} alt={`${property.title} thumbnail`} className="detail-gallery-thumb-image" loading="lazy" />
                     </button>
                   ))}
                 </div>
@@ -147,44 +168,66 @@ const PropertyDetails = () => {
             <section className="detail-header" id="detail-header">
               <div className="detail-header-top">
                 <h1 className="detail-title">{property.title}</h1>
-                <span className="detail-type-badge">{property.propertyType}</span>
+                <span className="detail-type-badge">{property.type}</span>
               </div>
               <p className="detail-location">
-                <FaMapMarkerAlt className="detail-location-icon" /> {property.location}
+                <FaMapMarkerAlt className="detail-location-icon" /> {location || "Location not specified"}
               </p>
+            </section>
+
+            {/* Key Facts */}
+            <section className="detail-key-facts" id="detail-key-facts" style={{
+              display: "flex", gap: "1.5rem", flexWrap: "wrap", margin: "1.5rem 0",
+              padding: "1.25rem", background: "var(--color-bg-secondary)", borderRadius: "var(--radius-lg)"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
+                <FaBed /> <span>{property.bedrooms || 0} Beds</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
+                <FaBath /> <span>{property.bathrooms || 0} Baths</span>
+              </div>
+              {property.areaSqm && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
+                  <FaRulerCombined /> <span>{property.areaSqm} m²</span>
+                </div>
+              )}
+              {property.floor != null && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
+                  <FaBuilding /> <span>Floor {property.floor}</span>
+                </div>
+              )}
             </section>
 
             {/* About Section */}
             <section className="detail-about" id="detail-about">
               <h2 className="detail-section-title">About This Property</h2>
-              <p className="detail-description">{property.description}</p>
+              <p className="detail-description">{property.description || "No description provided."}</p>
             </section>
 
             {/* Amenities Grid */}
-            <section className="detail-amenities" id="detail-amenities">
-              <h2 className="detail-section-title">Amenities</h2>
-              <div className="detail-amenities-grid">
-                {AMENITY_CONFIG.map(({ key, label, icon: Icon }) => {
-                  const isAvailable = property.amenities?.[key];
-                  return (
-                    <div key={key} className={`detail-amenity-card ${isAvailable ? "is-available" : "is-unavailable"}`}>
+            {activeAmenities.length > 0 && (
+              <section className="detail-amenities" id="detail-amenities">
+                <h2 className="detail-section-title">Amenities</h2>
+                <div className="detail-amenities-grid">
+                  {activeAmenities.map(({ key, label, icon: Icon }) => (
+                    <div key={key} className="detail-amenity-card is-available">
                       <Icon className="detail-amenity-card-icon" />
                       <span className="detail-amenity-card-label">{label}</span>
-                      {isAvailable && <MdVerified className="detail-amenity-check" />}
+                      <MdVerified className="detail-amenity-check" />
                     </div>
-                  );
-                })}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Reviews Section */}
             <section className="detail-reviews" id="detail-reviews">
               <div className="detail-reviews-header">
                 <h2 className="detail-section-title">Reviews</h2>
                 <div className="detail-reviews-summary">
-                  <div className="detail-reviews-stars">{renderStars(property.rating.averageScore)}</div>
-                  <span className="detail-reviews-score">{property.rating.averageScore.toFixed(1)}</span>
-                  <span className="detail-reviews-count">({property.rating.totalReviews} reviews)</span>
+                  <div className="detail-reviews-stars">{renderStars(property.averageRating)}</div>
+                  <span className="detail-reviews-score">{(property.averageRating || 0).toFixed(1)}</span>
+                  <span className="detail-reviews-count">({property.reviewCount || 0} reviews)</span>
                 </div>
               </div>
 
@@ -220,19 +263,16 @@ const PropertyDetails = () => {
           <aside className="detail-sidebar">
             <div className="sticky-booking-card" id="sticky-booking-card">
               <div className="booking-card-price-section">
-                <span className="booking-card-price">{formatPrice(property.price)}</span>
+                <span className="booking-card-price">{formatPrice(property.monthlyRent)}</span>
                 <span className="booking-card-period">/ month</span>
               </div>
               <hr className="booking-card-divider" />
               <div className="booking-card-landlord">
                 <div className="booking-card-landlord-info">
-                  <span className="booking-card-landlord-name">{property.landlord.fullName}</span>
+                  <span className="booking-card-landlord-name">{property.landlordName || "Landlord"}</span>
                   <span className="booking-card-landlord-role"><MdVerified className="booking-card-verified-icon" /> Verified Landlord</span>
                 </div>
               </div>
-              <a href={`tel:${property.landlord.phoneNumber}`} className="booking-card-phone">
-                <FaPhoneAlt className="booking-card-phone-icon" /> {property.landlord.phoneNumber}
-              </a>
               <hr className="booking-card-divider" />
               <div className="booking-card-actions">
                 <Link to={`/book-visit/${property.id}`} className="btn btn-primary btn-lg booking-card-btn" id="book-visit-btn"><FaCalendarAlt /> Book a Visit</Link>

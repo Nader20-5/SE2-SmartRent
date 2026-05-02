@@ -15,5 +15,5 @@ public class RejectRentalDto {
 
     @NotBlank
     @Size(max = 1000)
-    private String rejectionReason;
+    private String reason;
 }

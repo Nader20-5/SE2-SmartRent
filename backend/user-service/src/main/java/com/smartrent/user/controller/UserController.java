@@ -2,7 +2,7 @@ package com.smartrent.user.controller;
 
 import com.smartrent.user.dto.UpdateProfileDto;
 import com.smartrent.user.dto.UserResponseDto;
-import com.smartrent.user.service.impl.AuthServiceImpl;
+import com.smartrent.user.service.interfaces.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -13,18 +13,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final AuthServiceImpl authService;
+    private final IUserService userService;
 
     @GetMapping("/me")
     public ResponseEntity<UserResponseDto> getOwnProfile(@RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok(authService.getOwnProfile(userId));
+        return ResponseEntity.ok(userService.getOwnProfile(userId));
     }
 
     @PutMapping("/me")
     public ResponseEntity<UserResponseDto> updateOwnProfile(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody UpdateProfileDto dto) {
-        return ResponseEntity.ok(authService.updateOwnProfile(userId, dto));
+        return ResponseEntity.ok(userService.updateOwnProfile(userId, dto));
     }
 
     /**
@@ -33,6 +33,6 @@ public class UserController {
      */
     @GetMapping("/{id}/internal")
     public ResponseEntity<UserResponseDto> getUserInternal(@PathVariable Long id) {
-        return ResponseEntity.ok(authService.getUserInternal(id));
+        return ResponseEntity.ok(userService.getUserInternal(id));
     }
 }

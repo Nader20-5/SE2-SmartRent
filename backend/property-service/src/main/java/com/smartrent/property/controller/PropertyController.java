@@ -1,6 +1,7 @@
 package com.smartrent.property.controller;
 
 import com.smartrent.property.dto.*;
+import com.smartrent.property.model.PropertyStatus;
 import com.smartrent.property.service.interfaces.IPropertyService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -22,8 +22,8 @@ public class PropertyController {
 
     private final IPropertyService propertyService;
 
-    // ── Search (public — open to all) ────────────────────────────
-    @GetMapping("/search")
+    // ── Search (public — handles /api/properties and /api/properties/search) ──
+    @GetMapping({ "", "/search" })
     public ResponseEntity<Page<PropertyResponseDto>> searchProperties(
             PropertySearchParams params) {
         return ResponseEntity.ok(propertyService.searchProperties(params));
@@ -86,22 +86,23 @@ public class PropertyController {
     // ── Update status (admin only — checks X-User-Role) ──────────
     @PatchMapping("/{propertyId}/status")
     public ResponseEntity<PropertyResponseDto> updatePropertyStatus(
-            @RequestHeader("X-User-Role") String userRole,
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
             @PathVariable Long propertyId,
-            @Valid @RequestBody UpdateStatusDto dto) throws AccessDeniedException {
+            @RequestParam(value = "status") com.smartrent.property.model.PropertyStatus status,
+            @RequestParam(value = "reason", required = false) String reason) {
 
-        if (!"ADMIN".equalsIgnoreCase(userRole)) {
-            throw new AccessDeniedException("Only ADMIN users can update property status");
+        if (userRole != null && !"ADMIN".equalsIgnoreCase(userRole)) {
+            throw new RuntimeException("Only ADMIN users can update property status");
         }
 
         return ResponseEntity.ok(
-                propertyService.updatePropertyStatus(propertyId, dto.getStatus(), dto.getRejectionReason()));
+                propertyService.updatePropertyStatus(propertyId, status, reason));
     }
 
     // ── Landlord's own listings ──────────────────────────────────
-    @GetMapping("/landlord")
+    @GetMapping({ "/landlord", "/landlord/me" })
     public ResponseEntity<Page<PropertyResponseDto>> getLandlordProperties(
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
             Pageable pageable) {
         return ResponseEntity.ok(propertyService.getLandlordProperties(userId, pageable));
     }
@@ -111,5 +112,27 @@ public class PropertyController {
     public ResponseEntity<PropertySummaryDto> getPropertyInternal(
             @PathVariable Long propertyId) {
         return ResponseEntity.ok(propertyService.getPropertyInternal(propertyId));
+    }
+
+    // ── Admin stats endpoint ─────────────────────────────────────
+    @GetMapping("/admin/stats")
+    public ResponseEntity<java.util.Map<String, Long>> getPropertyStats(
+            @RequestHeader(value = "X-User-Role", required = false) String userRole) {
+        if (userRole != null && !"ADMIN".equalsIgnoreCase(userRole)) {
+            throw new RuntimeException("Only ADMIN users can access property stats");
+        }
+        return ResponseEntity.ok(propertyService.getPropertyStats());
+    }
+
+    // ── Admin list endpoint ──────────────────────────────────────
+    @GetMapping("/admin/all")
+    public ResponseEntity<Page<PropertyResponseDto>> getAllPropertiesForAdmin(
+            @RequestHeader(value = "X-User-Role", required = false) String userRole,
+            @RequestParam(value = "status", required = false) PropertyStatus status,
+            Pageable pageable) {
+        if (userRole != null && !"ADMIN".equalsIgnoreCase(userRole)) {
+            throw new RuntimeException("Only ADMIN users can access this endpoint");
+        }
+        return ResponseEntity.ok(propertyService.getAllPropertiesForAdmin(status, pageable));
     }
 }

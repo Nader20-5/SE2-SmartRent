@@ -19,7 +19,8 @@ import { MdElevator } from "react-icons/md";
 
 const PROPERTY_TYPES = [
   { value: "Apartment", label: "Apartment", icon: FaBuilding },
-  { value: "House", label: "House", icon: FaHome },
+  { value: "Office", label: "Office", icon: FaBuilding },
+  { value: "Room", label: "Room", icon: FaHome },
   { value: "Villa", label: "Villa", icon: FaHotel },
   { value: "Studio", label: "Studio", icon: FaDoorOpen },
 ];
@@ -127,30 +128,52 @@ const AddProperty = () => {
     setSubmitMsg(null);
 
     try {
-      // Build FormData — backend expects multipart/form-data
-      const fd = new FormData();
-      fd.append("Title", formData.title);
-      fd.append("Description", formData.description);
-      fd.append("PropertyType", formData.propertyType);
-      fd.append("Price", Number(formData.price));
-      fd.append("Location", formData.location);
-      fd.append("HasParking", formData.amenities.hasParking);
-      fd.append("HasElevator", formData.amenities.hasElevator);
-      fd.append("IsFurnished", formData.amenities.isFurnished);
-      fd.append("HasPool", formData.amenities.hasPool);
+      // 1. Map frontend state to backend CreatePropertyDto (JSON)
+      const amenitiesList = [];
+      if (formData.amenities.hasParking) amenitiesList.push("PARKING");
+      if (formData.amenities.hasPool) amenitiesList.push("POOL");
+      if (formData.amenities.hasElevator) amenitiesList.push("ELEVATOR");
+      if (formData.amenities.isFurnished) amenitiesList.push("FURNISHED");
 
-      imageFiles.forEach((img) => {
-        fd.append("Images", img.file);
-      });
+      const propertyData = {
+        title: formData.title,
+        description: formData.description,
+        type: formData.propertyType.toUpperCase(),
+        monthlyRent: Number(formData.price),
+        city: formData.location.split(',')[0].trim(), // Simple split for city
+        address: formData.location,
+        amenities: amenitiesList,
+        // Optional defaults for simplicity
+        bedrooms: 0,
+        bathrooms: 0,
+        areaSqm: 0,
+        floor: 1
+      };
 
-      await createProperty(fd);
-      setSubmitMsg({ type: "success", text: "Property submitted! Pending admin approval." });
+      // 2. Create the property
+      const createdProperty = await createProperty(propertyData);
+      const propertyId = createdProperty.id;
+
+      // 3. Upload images if any
+      if (imageFiles.length > 0) {
+        const imageFd = new FormData();
+        imageFiles.forEach((img) => {
+          imageFd.append("files", img.file);
+        });
+        
+        // We need a service for this
+        await import("../../services/propertyService").then(m => 
+          m.uploadPropertyImages(propertyId, imageFd)
+        );
+      }
+
+      setSubmitMsg({ type: "success", text: "Property created successfully! Pending admin approval." });
 
       // Navigate to landlord dashboard after short delay
       setTimeout(() => navigate("/landlord/dashboard"), 1500);
     } catch (err) {
       console.error("Failed to create property:", err);
-      const msg = err.response?.data?.message || "Failed to create property. Please try again.";
+      const msg = err.response?.data?.message || "Failed to create property. Please check all fields and try again.";
       setSubmitMsg({ type: "error", text: msg });
     } finally {
       setSubmitting(false);

@@ -19,11 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -38,9 +33,7 @@ public class RentalServiceImpl implements IRentalService {
     private final RentalMapper rentalMapper;
     private final UserServiceClient userServiceClient; // Only for checking user? Gateway gives role/id.
     private final PropertyServiceClient propertyServiceClient;
-
-    @Value("${app.storage.base-path}")
-    private String basePath;
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -91,35 +84,13 @@ public class RentalServiceImpl implements IRentalService {
             throw new DocumentUploadException("Invalid file");
         }
 
-        String mimeType = file.getContentType();
-        if (mimeType == null || (!mimeType.equals("application/pdf") && !mimeType.equals("image/jpeg") && !mimeType.equals("image/png"))) {
-            throw new DocumentUploadException("Only PDF, JPEG, and PNG files are allowed");
-        }
-
-        String extension = "";
-        int dotIndex = originalFilename.lastIndexOf('.');
-        if (dotIndex > 0) {
-            extension = originalFilename.substring(dotIndex);
-        }
-
-        String filename = UUID.randomUUID().toString() + extension;
-        Path uploadDir = Paths.get(basePath);
-        
-        try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-            File destinationFile = new File(uploadDir.toFile(), filename);
-            file.transferTo(destinationFile);
-        } catch (IOException e) {
-            throw new DocumentUploadException("Failed to upload document: " + e.getMessage());
-        }
+        String storedPath = fileStorageService.storeFile(file);
 
         ApplicationDocument document = ApplicationDocument.builder()
                 .application(application)
                 .documentType(type)
                 .fileName(originalFilename)
-                .fileUrl("/uploads/" + filename)
+                .fileUrl("/" + storedPath)
                 .fileSizeBytes(file.getSize())
                 .build();
 
@@ -209,7 +180,7 @@ public class RentalServiceImpl implements IRentalService {
         }
 
         application.setStatus(ApplicationStatus.REJECTED);
-        application.setRejectionReason(dto.getRejectionReason());
+        application.setRejectionReason(dto.getReason());
         application.setReviewedAt(LocalDateTime.now());
         
         application = rentalApplicationRepository.save(application);

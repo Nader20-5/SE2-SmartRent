@@ -19,4 +19,6 @@ public interface IPropertyService {
     void deleteImage(Long landlordId, Long propertyId, Long imageId);
     PropertyResponseDto updatePropertyStatus(Long propertyId, PropertyStatus status, String rejectionReason);
     PropertySummaryDto getPropertyInternal(Long id);
+    java.util.Map<String, Long> getPropertyStats();
+    Page<PropertyResponseDto> getAllPropertiesForAdmin(PropertyStatus status, Pageable pageable);
 }
