@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ApplicationDocumentRepository extends JpaRepository<ApplicationDocument, Long> {
     List<ApplicationDocument> findByApplicationId(Long applicationId);
+    java.util.Optional<ApplicationDocument> findByFileUrl(String fileUrl);
 }

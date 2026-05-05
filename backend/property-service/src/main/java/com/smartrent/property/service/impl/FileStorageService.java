@@ -64,7 +64,7 @@ public class FileStorageService {
             }
 
             log.info("Stored file: {}", targetPath);
-            return targetPath.toString().replace("\\", "/");
+            return "/uploads/" + storedFilename;
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file: " + e.getMessage(), e);
@@ -78,7 +78,12 @@ public class FileStorageService {
      */
     public void deleteFile(String filePath) {
         try {
-            Path path = Paths.get(filePath);
+            // Convert URL path (e.g. "/uploads/uuid.jpg") to filesystem path
+            String resolvedPath = filePath;
+            if (resolvedPath.startsWith("/uploads/")) {
+                resolvedPath = UPLOAD_DIR.resolve(resolvedPath.substring("/uploads/".length())).toString();
+            }
+            Path path = Paths.get(resolvedPath);
             Files.deleteIfExists(path);
             log.info("Deleted file: {}", filePath);
         } catch (IOException e) {

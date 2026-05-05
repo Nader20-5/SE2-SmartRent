@@ -77,7 +77,18 @@ const Navbar = () => {
               <FaHeart className="navbar-link-icon" /> Favorites
             </NavLink>
           )}
+                    {isAuthenticated && user?.role === ROLES.TENANT && (
+            <NavLink
+              to="/my-journey"
+              className={({ isActive }) =>
+                `navbar-link ${isActive ? "is-active" : ""}`
+              }
+            >
+              <FaChartLine className="navbar-link-icon" /> My Journey
+            </NavLink>
+          )}
           {isAuthenticated && user?.role === ROLES.LANDLORD && (
+
             <NavLink
               to="/landlord/dashboard"
               className={({ isActive }) =>
@@ -169,6 +180,16 @@ const Navbar = () => {
               }
             >
               <FaHeart /> Favorites
+            </NavLink>
+          )}
+          {isAuthenticated && user?.role === ROLES.TENANT && (
+            <NavLink
+              to="/my-journey"
+              className={({ isActive }) =>
+                `navbar-mobile-link ${isActive ? "is-active" : ""}`
+              }
+            >
+              <FaChartLine /> My Journey
             </NavLink>
           )}
           {isAuthenticated && user?.role === ROLES.LANDLORD && (

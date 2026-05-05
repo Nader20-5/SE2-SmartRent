@@ -51,6 +51,9 @@ public class RentalApplication {
     @Column(name = "move_in_date", nullable = false)
     private LocalDate moveInDate;
 
+    @Column(name = "lease_end_date", nullable = false)
+    private LocalDate leaseEndDate;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

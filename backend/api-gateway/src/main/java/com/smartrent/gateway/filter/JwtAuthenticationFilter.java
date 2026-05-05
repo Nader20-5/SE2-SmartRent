@@ -9,12 +9,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
+import org.springframework.util.AntPathMatcher;
 import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAuthenticationFilter.Config> {
 
     private final JwtUtil jwtUtil;
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Value("${app.public-paths}")
     private List<String> publicPaths;
@@ -31,7 +33,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
             String path = request.getURI().getPath();
 
             // 1. Check if path is public
-            boolean isPublic = publicPaths.stream().anyMatch(path::startsWith);
+            boolean isPublic = publicPaths.stream().anyMatch(p -> pathMatcher.match(p, path));
             
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 

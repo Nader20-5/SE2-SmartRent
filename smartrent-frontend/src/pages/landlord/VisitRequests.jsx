@@ -13,10 +13,11 @@ import {
 } from 'react-icons/fa';
 
 const STATUS_CONFIG = {
-  Accepted: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
-  Approved: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
-  Rejected: { color: 'var(--color-error)', bg: 'rgba(239,68,68,0.12)', icon: FaTimesCircle },
-  Pending: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', icon: FaClock },
+  ACCEPTED: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
+  APPROVED: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
+  REJECTED: { color: 'var(--color-error)', bg: 'rgba(239,68,68,0.12)', icon: FaTimesCircle },
+  PENDING: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', icon: FaClock },
+  CANCELLED: { color: 'var(--color-text-muted)', bg: 'var(--color-bg-elevated)', icon: FaTimesCircle },
 };
 
 const VisitRequests = () => {
@@ -64,7 +65,7 @@ const VisitRequests = () => {
   };
 
   const filteredRequests = requests.filter(req => 
-    filter === 'All' ? true : (req.status === filter || (filter === 'Accepted' && req.status === 'Approved'))
+    filter === 'All' ? true : (req.status === filter.toUpperCase() || (filter === 'Accepted' && req.status === 'APPROVED'))
   );
 
   const formatDate = (dateStr) => {
@@ -76,9 +77,9 @@ const VisitRequests = () => {
     });
   };
 
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    return timeStr;
   };
 
   return (
@@ -105,7 +106,7 @@ const VisitRequests = () => {
               {statusOption} 
               {statusOption !== 'All' && (
                 <span style={{ marginLeft: 6, fontSize: 'var(--font-size-xs)', opacity: 0.6 }}>
-                  ({requests.filter(r => (statusOption === 'All' ? true : (r.status === statusOption || (statusOption === 'Accepted' && r.status === 'Approved')))).length})
+                  ({requests.filter(r => (statusOption === 'All' ? true : (r.status === statusOption.toUpperCase() || (statusOption === 'Accepted' && r.status === 'APPROVED')))).length})
                 </span>
               )}
             </button>
@@ -142,7 +143,7 @@ const VisitRequests = () => {
               </thead>
               <tbody>
                 {filteredRequests.map(req => {
-                  const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.Pending;
+                  const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.PENDING;
                   const StatusIcon = cfg.icon;
                   return (
                     <tr key={req.id} style={{ borderBottom: '1px solid var(--color-border-light)', transition: 'background 0.15s' }}>
@@ -168,7 +169,7 @@ const VisitRequests = () => {
                           <FaCalendarAlt style={{ color: 'var(--color-primary-light)', fontSize: '0.75rem' }} />
                           <div>
                             <div style={{ fontWeight: 600 }}>{formatDate(req.requestedDate)}</div>
-                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{formatTime(req.requestedDate)}</div>
+                            <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{req.requestedTime || 'N/A'}</div>
                           </div>
                         </div>
                       </td>
@@ -179,7 +180,7 @@ const VisitRequests = () => {
                         </span>
                       </td>
                       <td style={{ textAlign: 'right', paddingRight: 'var(--space-5)' }}>
-                        {req.status === 'Pending' && (
+                        {req.status === 'PENDING' && (
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                             <button onClick={() => handleAction(req.id, 'approve')} className="btn btn-primary btn-sm">Accept</button>
                             <button onClick={() => handleAction(req.id, 'reject')} className="btn btn-sm" style={{ background: 'transparent', color: 'var(--color-error)', border: '1px solid var(--color-error)' }}>Reject</button>

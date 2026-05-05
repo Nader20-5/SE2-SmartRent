@@ -48,6 +48,14 @@
   transition: transform var(--transition-slow);
 }
 
+.property-card-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-elevated) 100%);
+  color: var(--color-text-muted);
+}
+
 .property-card:hover .property-card-image {
   transform: scale(1.05);
 }
@@ -240,6 +248,28 @@
   font-size: 0.75rem;
   margin-top: 3px;
   flex-shrink: 0;
+}
+
+/* Specs (Beds, Baths, Area) */
+.property-card-specs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: auto;
+  padding: var(--space-2) 0;
+}
+
+.property-card-spec {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.property-card-spec-icon {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
 }
 
 /* Amenities */

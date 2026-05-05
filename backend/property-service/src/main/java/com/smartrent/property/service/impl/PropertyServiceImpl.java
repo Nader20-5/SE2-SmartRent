@@ -248,6 +248,7 @@ public class PropertyServiceImpl implements IPropertyService {
     public java.util.Map<String, Long> getPropertyStats() {
         java.util.Map<String, Long> stats = new java.util.HashMap<>();
         stats.put("totalProperties", propertyRepository.count());
+        stats.put("activeProperties", propertyRepository.countByStatus(PropertyStatus.APPROVED));
         stats.put("pendingApprovals", propertyRepository.countByStatus(PropertyStatus.PENDING));
         return stats;
     }
@@ -310,7 +311,7 @@ public class PropertyServiceImpl implements IPropertyService {
         // Optional: city
         if (params.getCity() != null && !params.getCity().isBlank()) {
             spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("city"), params.getCity()));
+                    cb.like(cb.lower(root.get("city")), "%" + params.getCity().toLowerCase() + "%"));
         }
 
         // Optional: type

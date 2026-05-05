@@ -16,7 +16,19 @@ const Favorites = () => {
   const fetchFavorites = async () => {
     try {
       const data = await getFavorites();
-      setProperties(data || []);
+      setProperties((data || []).map(f => ({
+        ...f,
+        id: f.propertyId,
+        title: f.propertyTitle,
+        monthlyRent: f.monthlyRent,
+        city: f.city,
+        mainImageUrl: f.mainImageUrl,
+        isAvailable: f.isAvailable,
+        bedrooms: f.bedrooms,
+        bathrooms: f.bathrooms,
+        areaSqm: f.areaSqm,
+        type: f.type
+      })));
     } catch (err) {
       console.error("Failed to load favorites:", err);
     } finally {

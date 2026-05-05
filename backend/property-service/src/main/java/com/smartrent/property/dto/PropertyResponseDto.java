@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
 @Builder
@@ -32,6 +33,7 @@ public class PropertyResponseDto {
     private BigDecimal areaSqm;
     private Integer floor;
     private PropertyStatus status;
+    @JsonProperty("isAvailable")
     private boolean isAvailable;
     private String mainImageUrl;
     private List<String> imageUrls;

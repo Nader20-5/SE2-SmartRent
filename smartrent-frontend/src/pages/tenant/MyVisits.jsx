@@ -29,10 +29,11 @@ const MyVisits = () => {
 
   // تنسيق الألوان بناءً على حالة الطلب (Status)
   const statusColors = {
-    Pending: { bg: '#fff3e0', text: '#ef6c00', icon: '⏳' },
-    Accepted: { bg: '#e8f5e9', text: '#2e7d32', icon: '✅' },
-    Approved: { bg: '#e8f5e9', text: '#2e7d32', icon: '✅' },
-    Rejected: { bg: '#ffebee', text: '#c62828', icon: '❌' },
+    PENDING: { bg: '#fff3e0', text: '#ef6c00', icon: '⏳' },
+    ACCEPTED: { bg: '#e8f5e9', text: '#2e7d32', icon: '✅' },
+    APPROVED: { bg: '#e8f5e9', text: '#2e7d32', icon: '✅' },
+    REJECTED: { bg: '#ffebee', text: '#c62828', icon: '❌' },
+    CANCELLED: { bg: '#f5f5f5', text: '#9e9e9e', icon: '🚫' },
   };
 
   if (loading) return (
@@ -69,11 +70,11 @@ const MyVisits = () => {
         {/* Visits Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '30px' }}>
           {visits && visits.length > 0 ? visits.map(visit => {
-            // اختيار اللون بناءً على الحالة، الافتراضي هو Pending
-            const colors = statusColors[visit.status] || statusColors.Pending;
+            // اختيار اللون بناءً على الحالة، الافتراضي هو PENDING
+            const colors = statusColors[visit.status] || statusColors.PENDING;
             
             return (
-              <div key={visit._id || visit.id} style={{ backgroundColor: '#fff', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+              <div key={visit.id} style={{ backgroundColor: '#fff', borderRadius: '25px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
                 
                 {/* Image Area */}
                 <div style={{ position: 'relative', height: '200px' }}>
@@ -104,14 +105,14 @@ const MyVisits = () => {
                     <div style={{ borderLeft: '3px solid #1a237e', paddingLeft: '10px' }}>
                       <small style={{ color: '#a0a0a0', fontSize: '11px' }}>TIME</small>
                       <p style={{ color: '#333', fontWeight: 'bold', margin: 0 }}>
-                        {visit.requestedDate ? new Date(visit.requestedDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                        {visit.requestedTime || 'N/A'}
                       </p>
                     </div>
                   </div>
                   
-                  {visit.message && (
+                  {visit.notes && (
                      <p style={{ color: '#555', fontSize: '13px', fontStyle: 'italic', background: '#e1f5fe', padding: '10px', borderRadius: '8px' }}>
-                       "{visit.message}"
+                       "{visit.notes}"
                      </p>
                   )}
                 </div>

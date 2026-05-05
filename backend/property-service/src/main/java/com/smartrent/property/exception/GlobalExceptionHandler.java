@@ -44,16 +44,31 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // ── C3 Exceptions (review/favorite — extensibility point) ────
+    // ── C3 Exceptions (review/favorite) ──────────────────────────
 
     @ExceptionHandler(PropertyNotApprovedException.class)
     public ResponseEntity<Map<String, Object>> handlePropertyNotApproved(PropertyNotApprovedException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(DuplicateReviewException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicateReview(DuplicateReviewException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleReviewNotFound(ReviewNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
     @ExceptionHandler(DuplicateFavoriteException.class)
     public ResponseEntity<Map<String, Object>> handleDuplicateFavorite(DuplicateFavoriteException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(FavoriteNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleFavoriteNotFound(FavoriteNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     // ── Validation ───────────────────────────────────────────────

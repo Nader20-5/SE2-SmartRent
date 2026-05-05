@@ -22,11 +22,14 @@ public class RentalResponseDto {
     private Long landlordId;
     private Long propertyId;
     private String propertyTitle;
+    private String tenantName;
+    private String tenantEmail;
     private BigDecimal monthlyRentSnapshot;
     private String coverLetter;
     private EmploymentStatus employmentStatus;
     private BigDecimal monthlyIncome;
     private LocalDate moveInDate;
+    private LocalDate leaseEndDate;
     private ApplicationStatus status;
     private String rejectionReason;
     private LocalDateTime reviewedAt;

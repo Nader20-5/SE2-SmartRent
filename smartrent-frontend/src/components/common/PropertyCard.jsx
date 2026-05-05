@@ -10,8 +10,12 @@ import {
   FaStar,
   FaEdit,
   FaTrashAlt,
+  FaBed,
+  FaBath,
+  FaRulerCombined,
 } from "react-icons/fa";
 import { MdElevator } from "react-icons/md";
+import { getImageUrl } from "../../utils/constants";
 
 const AMENITY_CONFIG = [
   { key: "hasParking", label: "Parking", icon: FaParking },
@@ -84,12 +88,18 @@ const PropertyCard = ({
     >
       {/* ── Image Section ── */}
       <div className="property-card-image-wrapper">
-        <img
-          src={mainImage}
-          alt={property.title}
-          className="property-card-image"
-          loading="lazy"
-        />
+        {mainImage ? (
+          <img
+            src={getImageUrl(mainImage)}
+            alt={property.title}
+            className="property-card-image"
+            loading="lazy"
+          />
+        ) : (
+          <div className="property-card-image property-card-image-placeholder">
+            <FaHeart style={{ fontSize: '2rem', opacity: 0.2 }} />
+          </div>
+        )}
 
         {/* Gradient overlay for text readability */}
         <div className="property-card-image-overlay" />
@@ -156,6 +166,21 @@ const PropertyCard = ({
           <FaMapMarkerAlt className="property-card-pin-icon" />
           <span>{property.city}{property.district ? `, ${property.district}` : ''}</span>
         </p>
+
+        <div className="property-card-specs">
+          <span className="property-card-spec">
+            <FaBed className="property-card-spec-icon" />
+            <span>{property.bedrooms || 0} Bed</span>
+          </span>
+          <span className="property-card-spec">
+            <FaBath className="property-card-spec-icon" />
+            <span>{property.bathrooms || 0} Bath</span>
+          </span>
+          <span className="property-card-spec">
+            <FaRulerCombined className="property-card-spec-icon" />
+            <span>{property.areaSqm || 0} m²</span>
+          </span>
+        </div>
 
         {/* Amenity row — only render amenities with value true */}
         {activeAmenities.length > 0 && (

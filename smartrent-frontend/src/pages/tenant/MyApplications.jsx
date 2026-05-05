@@ -41,11 +41,11 @@ const MyApplications = () => {
         {/* Applications List */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {applications.length > 0 ? applications.map((app) => (
-            <div key={app._id} style={cardStyle}>
+            <div key={app.id} style={cardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <div style={iconBoxStyle}>🏠</div>
                 <div>
-                  <h3 style={{ margin: 0, color: '#2c3e50', fontWeight: '700' }}>{app.propertyName || "Premium Property"}</h3>
+                  <h3 style={{ margin: 0, color: '#2c3e50', fontWeight: '700' }}>{app.propertyTitle || "Premium Property"}</h3>
                   <p style={{ margin: '5px 0 0', color: '#94a3b8', fontSize: '13px' }}>
                     Applied on: {new Date(app.createdAt).toLocaleDateString()}
                   </p>
@@ -59,7 +59,7 @@ const MyApplications = () => {
                   </span>
                 </div>
                 <div style={{ fontSize: '12px', color: '#bdc3c7', fontWeight: '600' }}>
-                  REF: {app._id.substring(0, 8).toUpperCase()}
+                  REF: {String(app.id).padStart(5, '0')}
                 </div>
               </div>
             </div>

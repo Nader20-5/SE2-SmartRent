@@ -3,6 +3,7 @@ package com.smartrent.rental.service.impl;
 import com.smartrent.rental.client.PropertyServiceClient;
 import com.smartrent.rental.client.UserServiceClient;
 import com.smartrent.rental.client.dto.PropertySummaryDto;
+import com.smartrent.rental.client.dto.UserResponseDto;
 import com.smartrent.rental.dto.*;
 import com.smartrent.rental.exception.*;
 import com.smartrent.rental.mapper.RentalMapper;
@@ -116,7 +117,8 @@ public class RentalServiceImpl implements IRentalService {
             throw new UnauthorizedRentalActionException("You are not authorized to view this application");
         }
 
-        return rentalMapper.toResponseDto(application);
+        RentalResponseDto responseDto = rentalMapper.toResponseDto(application);
+        return enrichWithTenantDetails(responseDto);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class RentalServiceImpl implements IRentalService {
     @Override
     public List<RentalResponseDto> getLandlordApplications(Long landlordId) {
         return rentalApplicationRepository.findByLandlordId(landlordId).stream()
-                .map(rentalMapper::toResponseDto)
+                .map(app -> enrichWithTenantDetails(rentalMapper.toResponseDto(app)))
                 .collect(Collectors.toList());
     }
 
@@ -182,8 +184,19 @@ public class RentalServiceImpl implements IRentalService {
         application.setStatus(ApplicationStatus.REJECTED);
         application.setRejectionReason(dto.getReason());
         application.setReviewedAt(LocalDateTime.now());
-        
         application = rentalApplicationRepository.save(application);
-        return rentalMapper.toResponseDto(application);
+        return enrichWithTenantDetails(rentalMapper.toResponseDto(application));
+    }
+
+    private RentalResponseDto enrichWithTenantDetails(RentalResponseDto dto) {
+        try {
+            UserResponseDto user = userServiceClient.getUserById(dto.getTenantId());
+            dto.setTenantName(user.getFirstName() + " " + user.getLastName());
+            dto.setTenantEmail(user.getEmail());
+        } catch (Exception e) {
+            dto.setTenantName("Unknown Tenant");
+            dto.setTenantEmail("Unknown Email");
+        }
+        return dto;
     }
 }

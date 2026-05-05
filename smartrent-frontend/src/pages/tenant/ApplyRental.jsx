@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { createRentalApplication } from '../../services/rentalService';
+import { createRentalApplication, uploadDocument } from '../../services/rentalService';
 import { toast } from 'react-toastify';
 import {
   FaFileSignature,
@@ -17,9 +17,10 @@ const ApplyRental = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    proposedRent: '',
+    monthlyIncome: '',
     moveInDate: '',
     leaseEndDate: '',
+    employmentStatus: 'EMPLOYED',
     coverLetter: '',
     documents: null,
   });
@@ -41,7 +42,7 @@ const ApplyRental = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate date range
+    // Validate inputs
     if (formData.moveInDate && formData.leaseEndDate) {
       if (new Date(formData.leaseEndDate) <= new Date(formData.moveInDate)) {
         toast.error('Lease end date must be after the move-in date.');
@@ -49,24 +50,32 @@ const ApplyRental = () => {
       }
     }
 
-    setLoading(true);
-
-    const data = new FormData();
-    data.append('PropertyId', propertyId);
-    data.append('ProposedRent', formData.proposedRent);
-    data.append('MoveInDate', formData.moveInDate);
-    data.append('LeaseEndDate', formData.leaseEndDate);
-    data.append('CoverLetter', formData.coverLetter);
-
-    // Append files with the correct key for List<IFormFile>
-    if (formData.documents) {
-      for (let i = 0; i < formData.documents.length; i++) {
-        data.append('Documents', formData.documents[i]);
-      }
+    if (!formData.monthlyIncome || parseFloat(formData.monthlyIncome) <= 0) {
+      toast.error('Please enter a valid monthly income.');
+      return;
     }
 
+    setLoading(true);
+
     try {
-      await createRentalApplication(data);
+      // 1. Submit JSON payload
+      const applicationDto = {
+        propertyId: parseInt(propertyId),
+        monthlyIncome: parseFloat(formData.monthlyIncome),
+        moveInDate: formData.moveInDate,
+        leaseEndDate: formData.leaseEndDate,
+        employmentStatus: formData.employmentStatus,
+        coverLetter: formData.coverLetter,
+      };
+      const response = await createRentalApplication(applicationDto);
+      const newRentalId = response.id;
+
+      // 2. Upload documents if any
+      if (formData.documents && formData.documents.length > 0) {
+        for (let i = 0; i < formData.documents.length; i++) {
+          await uploadDocument(newRentalId, 'OTHER', formData.documents[i]);
+        }
+      }
       toast.success('Application submitted successfully!');
       navigate('/my-applications');
     } catch (error) {
@@ -153,22 +162,46 @@ const ApplyRental = () => {
               </div>
             </div>
 
-            {/* Proposed Rent */}
+            {/* Employment Status & Monthly Income */}
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">
+                  <FaFileSignature style={{ marginRight: 6, color: 'var(--color-primary-light)' }} />
+                  Employment Status *
+                </label>
+                <select
+                  name="employmentStatus"
+                  className="form-input"
+                  required
+                  value={formData.employmentStatus}
+                  onChange={handleChange}
+                  id="input-employment-status"
+                >
+                  <option value="EMPLOYED">Employed</option>
+                  <option value="SELF_EMPLOYED">Self Employed</option>
+                  <option value="STUDENT">Student</option>
+                  <option value="RETIRED">Retired</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Monthly Income */}
             <div className="form-group">
               <label className="form-label">
                 <FaMoneyBillWave style={{ marginRight: 6, color: 'var(--color-success)' }} />
-                Proposed Monthly Rent ($) *
+                Monthly Income ($) *
               </label>
               <input
                 type="number"
-                name="proposedRent"
+                name="monthlyIncome"
                 className="form-input"
                 placeholder="e.g. 5000"
                 required
                 min="1"
-                value={formData.proposedRent}
+                value={formData.monthlyIncome}
                 onChange={handleChange}
-                id="input-proposed-rent"
+                id="input-monthly-income"
               />
             </div>
 

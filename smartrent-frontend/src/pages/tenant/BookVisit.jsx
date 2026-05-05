@@ -13,10 +13,12 @@ const BookVisit = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const [datePart, timePart] = requestedDate.split('T');
       await createVisit({
         propertyId: parseInt(propertyId),
-        requestedDate,
-        message
+        requestedDate: datePart,
+        requestedTime: timePart,
+        notes: message
       });
       toast.success("Visit requested successfully!");
       navigate('/my-visits');

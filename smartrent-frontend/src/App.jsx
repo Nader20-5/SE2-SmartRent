@@ -31,6 +31,7 @@ import BookVisit from "./pages/tenant/BookVisit";
 import ApplyRental from "./pages/tenant/ApplyRental";
 import MyVisits from "./pages/tenant/MyVisits";
 import MyApplications from "./pages/tenant/MyApplications";
+import MyJourney from "./pages/tenant/MyJourney";
 import Favorites from "./pages/tenant/Favorites";
 
 import { ROLES } from "./utils/constants";
@@ -131,6 +132,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={[ROLES.TENANT]}>
                   <MyVisits />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-journey"
+              element={
+                <ProtectedRoute allowedRoles={[ROLES.TENANT]}>
+                  <><MyJourney /><Footer /></>
                 </ProtectedRoute>
               }
             />

@@ -16,6 +16,10 @@ spring:
           uri: lb://PROPERTY-SERVICE
           predicates:
             - Path=/api/properties/**, /api/reviews/**, /api/favorites/**
+        - id: property-uploads
+          uri: lb://PROPERTY-SERVICE
+          predicates:
+            - Path=/uploads/**
         - id: visit-service
           uri: lb://VISIT-SERVICE
           predicates:
@@ -23,7 +27,7 @@ spring:
         - id: rental-service
           uri: lb://RENTAL-SERVICE
           predicates:
-            - Path=/api/rentals/**
+            - Path=/api/rentals/**, /api/Document/**
 eureka:
   client:
     service-url:
@@ -35,4 +39,4 @@ eureka:
 app:
   jwt:
     secret: ${JWT_SECRET}
-  public-paths: /api/auth/register,/api/auth/login,/api/properties
+  public-paths: /api/auth/register,/api/auth/login,/api/properties,/api/reviews/property/**,/uploads/**

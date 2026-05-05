@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════
    FAVORITES PAGE
    ═══════════════════════════════════════════════════════════════════ */
 .favorites-header {
@@ -214,6 +214,41 @@
 .badge-info {
   background: rgba(59, 130, 246, 0.15);
   color: var(--color-info);
+}
+
+/* ─── Status Badges (Shared) ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.active,
+.status-badge.approved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.status-badge.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.status-badge.inactive,
+.status-badge.rejected,
+.status-badge.unavailable {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.status-badge.withdrawn {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
 }
 
 

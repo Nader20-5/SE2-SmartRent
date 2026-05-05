@@ -30,4 +30,8 @@ public class CreateRentalDto {
     @NotNull
     @Future
     private LocalDate moveInDate;
+
+    @NotNull
+    @Future
+    private LocalDate leaseEndDate;
 }

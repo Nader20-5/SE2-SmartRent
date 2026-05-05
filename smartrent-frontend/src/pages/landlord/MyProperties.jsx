@@ -47,15 +47,26 @@ const MyProperties = () => {
 
   const filteredProperties = useMemo(() => {
     return properties.filter((p) => {
-      if (
-        searchQuery &&
-        !p.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !p.location.toLowerCase().includes(searchQuery.toLowerCase())
-      ) {
+      const titleMatch = !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const cityMatch = !searchQuery || (p.city && p.city.toLowerCase().includes(searchQuery.toLowerCase()));
+      const addressMatch = !searchQuery || (p.address && p.address.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      if (searchQuery && !titleMatch && !cityMatch && !addressMatch) {
         return false;
       }
-      if (statusFilter !== "All Statuses" && p.rentalStatus !== statusFilter) return false;
-      if (typeFilter !== "All Types" && p.propertyType !== typeFilter) return false;
+      
+      if (statusFilter !== "All Statuses") {
+        const statusMap = {
+          "Available": "APPROVED", // Assuming Available means Approved and isAvailable=true
+          "Pending Approval": "PENDING",
+          "Approved": "APPROVED",
+          "Rejected": "REJECTED"
+        };
+        if (p.status !== statusMap[statusFilter]) return false;
+      }
+      
+      if (typeFilter !== "All Types" && p.type?.toUpperCase() !== typeFilter.toUpperCase()) return false;
+      
       return true;
     });
   }, [searchQuery, statusFilter, typeFilter, properties]);

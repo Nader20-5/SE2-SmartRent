@@ -54,3 +54,19 @@ export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 10,
   DEFAULT_PAGE: 0,
 };
+
+/**
+ * Resolves property image URLs to a loadable path.
+ * Handles absolute URLs, /uploads/ paths, and legacy "uploads/" paths.
+ */
+export const getImageUrl = (url) => {
+  if (!url) return null;
+  // Already an absolute URL (http/https)
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  // Already starts with /uploads/ — works with proxy/gateway
+  if (url.startsWith("/uploads/")) return url;
+  // Legacy: "uploads/filename.jpg" — add leading slash
+  if (url.startsWith("uploads/")) return "/" + url;
+  // Fallback: return as-is
+  return url;
+};

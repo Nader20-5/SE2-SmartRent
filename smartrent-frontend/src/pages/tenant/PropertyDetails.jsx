@@ -9,6 +9,7 @@ import {
   FaStar,
   FaArrowLeft,
   FaHeart,
+  FaRegHeart,
   FaShare,
   FaCar,
   FaBuilding,
@@ -21,12 +22,16 @@ import {
   FaCalendarAlt,
   FaFileSignature,
   FaChevronLeft,
-  FaUserCircle,
-  FaQuoteLeft,
+  FaEdit,
+  FaTrashAlt,
 } from "react-icons/fa";
 import { MdElevator, MdVerified } from "react-icons/md";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import { getPropertyById } from "../../services/propertyService";
+import * as reviewService from "../../services/reviewService";
+import * as favoriteService from "../../services/favoriteService";
+import { getImageUrl } from "../../utils/constants";
 
 const AMENITY_CONFIG = [
   { key: "PARKING", label: "Parking", icon: FaParking },
@@ -45,39 +50,137 @@ const AMENITY_CONFIG = [
 const formatPrice = (price) =>
   `${(price || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })} EGP`;
 
-const renderStars = (score) => {
+const renderStars = (score, onClick) => {
   const stars = [];
   const s = score || 0;
   const fullStars = Math.floor(s);
   const hasHalf = s - fullStars >= 0.25 && s - fullStars < 0.75;
   const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
 
-  for (let i = 0; i < fullStars; i++) stars.push(<FaStar key={`full-${i}`} className="star-icon star-filled" />);
-  if (hasHalf) stars.push(<FaStarHalfAlt key="half" className="star-icon star-filled" />);
-  for (let i = 0; i < emptyStars; i++) stars.push(<FaRegStar key={`empty-${i}`} className="star-icon star-empty" />);
+  for (let i = 0; i < fullStars; i++) 
+    stars.push(<FaStar key={`full-${i}`} className="star-icon star-filled" onClick={() => onClick?.(i + 1)} style={{ cursor: onClick ? "pointer" : "default" }} />);
+  if (hasHalf) 
+    stars.push(<FaStarHalfAlt key="half" className="star-icon star-filled" />);
+  for (let i = 0; i < emptyStars; i++) 
+    stars.push(<FaRegStar key={`empty-${i}`} className="star-icon star-empty" onClick={() => onClick?.(fullStars + (hasHalf ? 1 : 0) + i + 1)} style={{ cursor: onClick ? "pointer" : "default" }} />);
   return stars;
 };
 
 const PropertyDetails = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [property, setProperty] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProperty = async () => {
-      try {
-        const data = await getPropertyById(id);
-        setProperty(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoading(false);
+  // Review form state
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [editingReviewId, setEditingReviewId] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      const [propertyData, reviewsData] = await Promise.all([
+        getPropertyById(id),
+        reviewService.getPropertyReviews(id)
+      ]);
+      console.log("Property Data:", propertyData);
+      console.log("Reviews Data:", reviewsData);
+      
+      setProperty(propertyData);
+      setReviews(Array.isArray(reviewsData) ? reviewsData : []);
+
+      if (user) {
+        try {
+          const favStatus = await favoriteService.isFavorited(id);
+          console.log("Favorite Status:", favStatus);
+          setIsFavorite(!!favStatus);
+        } catch (e) {
+          console.error("Failed to check favorite status:", e);
+        }
       }
-    };
-    fetchProperty();
-  }, [id]);
+    } catch (err) {
+      console.error("Error fetching property details:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [id, user]);
+
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        await favoriteService.removeFavorite(id);
+        setIsFavorite(false);
+        toast.info("Removed from favorites");
+      } else {
+        await favoriteService.addFavorite(id);
+        setIsFavorite(true);
+        toast.success("Added to favorites!");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update favorites");
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    try {
+      if (editingReviewId) {
+        await reviewService.updateReview(editingReviewId, { rating: reviewRating, comment: reviewComment });
+        toast.success("Review updated!");
+      } else {
+        await reviewService.createReview(id, { rating: reviewRating, comment: reviewComment });
+        toast.success("Review posted!");
+      }
+      setReviewComment("");
+      setReviewRating(5);
+      setEditingReviewId(null);
+      // Refresh reviews and property (to get updated avg rating)
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit review");
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleEditReview = (review) => {
+    setEditingReviewId(review.id);
+    setReviewRating(review.rating);
+    setReviewComment(review.comment);
+    document.getElementById("review-form").scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Are you sure you want to delete your review?")) return;
+
+    try {
+      await reviewService.deleteReview(reviewId);
+      toast.success("Review deleted");
+      fetchData();
+    } catch (err) {
+      toast.error("Failed to delete review");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -106,14 +209,13 @@ const PropertyDetails = () => {
     );
   }
 
-  // Map backend fields
-  const imageUrls = property.imageUrls || [];
-  const currentImage = imageUrls[activeImageIndex] || property.mainImageUrl;
+  const imageUrls = (property.imageUrls || []).map(getImageUrl).filter(Boolean);
+  const currentImage = imageUrls[activeImageIndex] || getImageUrl(property.mainImageUrl);
   const location = [property.city, property.district].filter(Boolean).join(", ");
-
-  // Amenities from backend are a list of strings like ["PARKING", "POOL"]
   const amenities = property.amenities || [];
   const activeAmenities = AMENITY_CONFIG.filter((a) => amenities.includes(a.key));
+
+  const userReview = Array.isArray(reviews) ? reviews.find(r => String(r.tenantId) === String(user?.id)) : null;
 
   return (
     <div className="page-wrapper">
@@ -147,6 +249,14 @@ const PropertyDetails = () => {
                     {property.isAvailable ? 'Available' : 'Unavailable'}
                   </span>
                 </div>
+                {/* Favorite button on image */}
+                <button 
+                  className={`detail-fav-btn ${isFavorite ? 'is-active' : ''}`}
+                  onClick={handleFavoriteToggle}
+                  aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                >
+                  {isFavorite ? <FaHeart /> : <FaRegHeart />}
+                </button>
               </div>
               {imageUrls.length > 1 && (
                 <div className="detail-gallery-thumbnails">
@@ -155,7 +265,6 @@ const PropertyDetails = () => {
                       key={index}
                       className={`detail-gallery-thumb ${activeImageIndex === index ? "is-active" : ""}`}
                       onClick={() => setActiveImageIndex(index)}
-                      aria-label={`View image ${index + 1}`}
                     >
                       <img src={url} alt={`${property.title} thumbnail`} className="detail-gallery-thumb-image" loading="lazy" />
                     </button>
@@ -181,16 +290,14 @@ const PropertyDetails = () => {
               padding: "1.25rem", background: "var(--color-bg-secondary)", borderRadius: "var(--radius-lg)"
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
-                <FaBed /> <span>{property.bedrooms || 0} Beds</span>
+                <FaBed /> <span>{property.bedrooms || 0} Bedrooms</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
-                <FaBath /> <span>{property.bathrooms || 0} Baths</span>
+                <FaBath /> <span>{property.bathrooms || 0} Bathrooms</span>
               </div>
-              {property.areaSqm && (
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
-                  <FaRulerCombined /> <span>{property.areaSqm} m²</span>
-                </div>
-              )}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
+                <FaRulerCombined /> <span>{property.areaSqm || 0} m²</span>
+              </div>
               {property.floor != null && (
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-text-secondary)" }}>
                   <FaBuilding /> <span>Floor {property.floor}</span>
@@ -220,39 +327,137 @@ const PropertyDetails = () => {
               </section>
             )}
 
-            {/* Reviews Section */}
+            {/* ══════ Reviews Section ══════ */}
             <section className="detail-reviews" id="detail-reviews">
-              <div className="detail-reviews-header">
-                <h2 className="detail-section-title">Reviews</h2>
-                <div className="detail-reviews-summary">
-                  <div className="detail-reviews-stars">{renderStars(property.averageRating)}</div>
-                  <span className="detail-reviews-score">{(property.averageRating || 0).toFixed(1)}</span>
-                  <span className="detail-reviews-count">({property.reviewCount || 0} reviews)</span>
+              {/* Reviews Header Card */}
+              <div className="reviews-hero">
+                <div className="reviews-hero-left">
+                  <h2 className="reviews-hero-title">Reviews</h2>
+                  <p className="reviews-hero-subtitle">
+                    {(property.reviewCount || 0) > 0
+                      ? `See what ${property.reviewCount} ${property.reviewCount === 1 ? 'tenant' : 'tenants'} said about this property`
+                      : 'Be the first to share your experience'}
+                  </p>
+                </div>
+                <div className="reviews-hero-score">
+                  <div className="reviews-score-big">{(property.averageRating || 0).toFixed(1)}</div>
+                  <div className="reviews-score-stars">{renderStars(property.averageRating)}</div>
+                  <div className="reviews-score-count">{property.reviewCount || 0} reviews</div>
                 </div>
               </div>
 
-              <div className="detail-reviews-list">
-                {property.reviews && property.reviews.length > 0 ? (
-                  property.reviews.map((review) => (
-                    <article key={review.id} className="detail-review-card">
-                      <div className="detail-review-header">
-                        <FaUserCircle className="detail-review-avatar-icon" style={{ fontSize: "2.5rem", color: "var(--color-text-muted)" }} />
-                        <div className="detail-review-meta">
-                          <span className="detail-review-author">{review.tenantFullName}</span>
-                          <span className="detail-review-date">{new Date(review.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</span>
+              {/* Review Form */}
+              {user?.role === "TENANT" && (!userReview || editingReviewId) && (
+                <div className="review-form-card" id="review-form">
+                  <div className="review-form-card-header">
+                    <FaStar className="review-form-card-icon" />
+                    <h3 className="review-form-card-title">
+                      {editingReviewId ? "Edit Your Review" : "Share Your Experience"}
+                    </h3>
+                  </div>
+
+                  <form onSubmit={handleReviewSubmit} className="review-form-body">
+                    <div className="review-form-rating-section">
+                      <label className="review-form-label">How would you rate this property?</label>
+                      <div className="review-form-stars-row">
+                        <div className="star-rating-input">
+                          {renderStars(reviewRating, (score) => setReviewRating(score))}
                         </div>
-                        <div className="detail-review-stars">{renderStars(review.rating)}</div>
+                        <span className="review-form-rating-label">
+                          {reviewRating === 1 ? 'Poor' : reviewRating === 2 ? 'Fair' : reviewRating === 3 ? 'Good' : reviewRating === 4 ? 'Very Good' : 'Excellent'}
+                        </span>
                       </div>
-                      <div className="detail-review-body">
-                        <FaQuoteLeft className="detail-review-quote-icon" />
-                        <p className="detail-review-comment">{review.comment}</p>
-                      </div>
-                    </article>
-                  ))
+                    </div>
+
+                    <div className="review-form-text-section">
+                      <label htmlFor="comment" className="review-form-label">Tell us more</label>
+                      <textarea
+                        id="comment"
+                        className="review-textarea"
+                        placeholder="Share details about the location, amenities, landlord responsiveness, and anything future tenants should know…"
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        required
+                        rows={4}
+                      />
+                    </div>
+
+                    <div className="review-form-actions">
+                      <button type="submit" className="btn btn-primary review-submit-btn" disabled={isSubmittingReview}>
+                        {isSubmittingReview ? (
+                          <><span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Saving...</>
+                        ) : editingReviewId ? (
+                          <><FaEdit /> Update Review</>
+                        ) : (
+                          <><FaStar /> Post Review</>
+                        )}
+                      </button>
+                      {editingReviewId && (
+                        <button type="button" className="btn btn-secondary" onClick={() => { setEditingReviewId(null); setReviewComment(""); setReviewRating(5); }}>
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Reviews List */}
+              <div className="detail-reviews-list">
+                {Array.isArray(reviews) && reviews.length > 0 ? (
+                  reviews.map((review) => {
+                    const initials = (review.tenantFullName || 'A')
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2);
+                    const avatarHue = ((review.tenantId || 0) * 137) % 360;
+                    return (
+                      <article key={review.id} className="review-card-v2">
+                        <div className="review-card-v2-header">
+                          <div
+                            className="review-avatar-circle"
+                            style={{ background: `hsl(${avatarHue}, 55%, 55%)` }}
+                          >
+                            {initials}
+                          </div>
+                          <div className="review-card-v2-meta">
+                            <span className="review-card-v2-author">{review.tenantFullName || 'Anonymous'}</span>
+                            <span className="review-card-v2-date">
+                              {review.createdAt
+                                ? new Date(review.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                                : "Recently"}
+                            </span>
+                          </div>
+                          <div className="review-card-v2-rating">
+                            <span className="review-card-v2-rating-number">{review.rating}.0</span>
+                            <div className="review-card-v2-stars">{renderStars(review.rating)}</div>
+                          </div>
+                          {String(user?.id) === String(review.tenantId) && (
+                            <div className="review-card-v2-actions">
+                              <button className="review-action-btn review-action-edit" onClick={() => handleEditReview(review)} title="Edit review">
+                                <FaEdit />
+                              </button>
+                              <button className="review-action-btn review-action-delete" onClick={() => handleDeleteReview(review.id)} title="Delete review">
+                                <FaTrashAlt />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <div className="review-card-v2-body">
+                          <p className="review-card-v2-comment">{review.comment}</p>
+                        </div>
+                      </article>
+                    );
+                  })
                 ) : (
-                  <div className="empty-state" style={{ padding: "2rem 0" }}>
-                    <FaRegStar style={{ fontSize: "2rem", color: "var(--color-text-muted)", marginBottom: "0.5rem" }} />
-                    <p style={{ color: "var(--color-text-muted)" }}>No reviews yet for this property.</p>
+                  <div className="reviews-empty-state">
+                    <div className="reviews-empty-icon">
+                      <FaRegStar />
+                    </div>
+                    <h4 className="reviews-empty-title">No Reviews Yet</h4>
+                    <p className="reviews-empty-text">Be the first to review this property and help other tenants make informed decisions.</p>
                   </div>
                 )}
               </div>

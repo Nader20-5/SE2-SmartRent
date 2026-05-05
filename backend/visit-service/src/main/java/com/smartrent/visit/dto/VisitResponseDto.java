@@ -17,6 +17,8 @@ import java.time.LocalTime;
 public class VisitResponseDto {
     private Long id;
     private Long tenantId;
+    private String tenantName;
+    private String tenantEmail;
     private Long landlordId;
     private Long propertyId;
     private String propertyTitle;

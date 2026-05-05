@@ -15,7 +15,9 @@ public class ReviewResponseDto {
     private Long id;
     private Long propertyId;
     private Long tenantId;
+    private String tenantFullName;
     private int rating;
     private String comment;
     private LocalDateTime createdAt;
 }
+

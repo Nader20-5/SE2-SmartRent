@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Frozen cross-service contract — consumed by visit-service and rental-service.
@@ -20,6 +21,7 @@ public class PropertySummaryDto {
     private Long landlordId;
     private String title;
     private String status;        // "APPROVED", "PENDING", etc.
+    @JsonProperty("isAvailable")
     private Boolean isAvailable;
     private BigDecimal monthlyRent;
 }

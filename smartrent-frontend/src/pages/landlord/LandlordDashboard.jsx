@@ -84,11 +84,10 @@ const LandlordDashboard = () => {
   // ── Derive stats from properties data ──
   const stats = useMemo(() => {
     const total = properties.length;
-    const approved = properties.filter((p) => p.isApproved).length;
-    const pending = properties.filter((p) => !p.isApproved && p.isActive).length;
-    const rejected = properties.filter((p) => !p.isApproved && !p.isActive).length;
-    const occupancyRate =
-      total > 0 ? Math.round((approved / total) * 100) : 0;
+    const approved = properties.filter((p) => p.status === "APPROVED").length;
+    const pending = properties.filter((p) => p.status === "PENDING").length;
+    const rejected = properties.filter((p) => p.status === "REJECTED").length;
+    const occupancyRate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
     return { total, approved, pending, rejected, occupancyRate };
   }, [properties]);

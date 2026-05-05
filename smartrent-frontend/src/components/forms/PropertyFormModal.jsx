@@ -49,6 +49,10 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
     propertyType: "",
     price: "",
     location: "",
+    bedrooms: "1",
+    bathrooms: "1",
+    areaSqm: "",
+    floor: "1",
     amenities: {
       hasParking: false,
       hasElevator: false,
@@ -68,10 +72,19 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
       setFormData({
         title: property.title || "",
         description: property.description || "",
-        propertyType: property.propertyType || "",
-        price: String(property.price || ""),
-        location: property.location || "",
-        amenities: { ...property.amenities },
+        propertyType: (property.type || "").charAt(0).toUpperCase() + (property.type || "").slice(1).toLowerCase(),
+        price: String(property.monthlyRent || ""),
+        location: property.address || property.city || "",
+        bedrooms: String(property.bedrooms || "1"),
+        bathrooms: String(property.bathrooms || "1"),
+        areaSqm: String(property.areaSqm || ""),
+        floor: String(property.floor || "1"),
+        amenities: {
+          hasParking: property.amenities?.includes("PARKING") || false,
+          hasElevator: property.amenities?.includes("ELEVATOR") || false,
+          isFurnished: property.amenities?.includes("FURNISHED") || false,
+          hasPool: property.amenities?.includes("POOL") || false,
+        },
       });
       setExistingImages(property.images || []);
     } else {
@@ -81,6 +94,10 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
         propertyType: "",
         price: "",
         location: "",
+        bedrooms: "1",
+        bathrooms: "1",
+        areaSqm: "",
+        floor: "1",
         amenities: {
           hasParking: false,
           hasElevator: false,
@@ -222,10 +239,10 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
         city: formData.location.split(',')[0].trim(),
         address: formData.location,
         amenities: amenitiesList,
-        bedrooms: property?.bedrooms || 0,
-        bathrooms: property?.bathrooms || 0,
-        areaSqm: property?.areaSqm || 0,
-        floor: property?.floor || 1
+        bedrooms: Number(formData.bedrooms),
+        bathrooms: Number(formData.bathrooms),
+        areaSqm: Number(formData.areaSqm),
+        floor: Number(formData.floor)
       };
 
       let propertyId;
@@ -355,7 +372,7 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
             <h3 className="modal-form-section-title">Price & Location</h3>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Monthly Price ($)</label>
+                <label className="form-label">Monthly Price (EGP)</label>
                 <input
                   type="number"
                   name="price"
@@ -382,6 +399,58 @@ const PropertyFormModal = ({ isOpen, onClose, property = null, onSuccess }) => {
                 {errors.location && (
                   <span className="form-error-text">{errors.location}</span>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Property Details (Beds, Baths, Area, Floor) */}
+          <div className="modal-form-section">
+            <h3 className="modal-form-section-title">Property Details</h3>
+            <div className="form-row" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: "15px" }}>
+              <div className="form-group">
+                <label className="form-label">Bedrooms</label>
+                <input
+                  type="number"
+                  name="bedrooms"
+                  className="form-input"
+                  min="0"
+                  value={formData.bedrooms}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Bathrooms</label>
+                <input
+                  type="number"
+                  name="bathrooms"
+                  className="form-input"
+                  min="0"
+                  value={formData.bathrooms}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Area (m²)</label>
+                <input
+                  type="number"
+                  name="areaSqm"
+                  className="form-input"
+                  placeholder="e.g. 120"
+                  min="0"
+                  value={formData.areaSqm}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Floor</label>
+                <input
+                  type="number"
+                  name="floor"
+                  className="form-input"
+                  placeholder="e.g. 1"
+                  value={formData.floor}
+                  onChange={handleInputChange}
+                />
               </div>
             </div>
           </div>

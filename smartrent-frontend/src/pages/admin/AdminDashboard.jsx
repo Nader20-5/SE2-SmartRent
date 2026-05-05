@@ -55,6 +55,7 @@ const AdminDashboard = () => {
     totalUsers: 0,
     activeLandlords: 0,
     totalProperties: 0,
+    activeProperties: 0,
     pendingApprovals: 0,
   });
   
@@ -80,7 +81,7 @@ const AdminDashboard = () => {
         getAllPropertiesAdmin({ page: 0, size: 100 }),
         getAllPropertiesAdmin({ page: 0, size: 100, status: "PENDING" }),
       ]);
-      setStats(statsData || { totalUsers: 0, activeLandlords: 0, totalProperties: 0, pendingApprovals: 0 });
+      setStats(statsData || { totalUsers: 0, activeLandlords: 0, totalProperties: 0, activeProperties: 0, pendingApprovals: 0 });
       setAllUsers(usersData?.content || usersData || []);
       setPendingUsers(pendingUsersData?.content || pendingUsersData || []);
       setAllProperties(propertiesData?.content || propertiesData || []);
@@ -280,10 +281,10 @@ const AdminDashboard = () => {
             </div>
 
             <div className="stat-card navy">
-              <div className="stat-label">Total Properties</div>
-              <div className="stat-number">{stats.totalProperties}</div>
+              <div className="stat-label">Active Properties</div>
+              <div className="stat-number">{stats.activeProperties}</div>
               <div className="stat-sub navy">
-                <span className="stat-sub-icon">🏠</span> Live DB Stats
+                <span className="stat-sub-icon">🏠</span> Approved & Live
               </div>
             </div>
 

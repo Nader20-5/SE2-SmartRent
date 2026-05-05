@@ -13,9 +13,10 @@ import {
 } from 'react-icons/fa';
 
 const STATUS_CONFIG = {
-  Approved: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
-  Rejected: { color: 'var(--color-error)', bg: 'rgba(239,68,68,0.12)', icon: FaTimesCircle },
-  Pending: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', icon: FaClock },
+  APPROVED: { color: 'var(--color-success)', bg: 'rgba(16,185,129,0.12)', icon: FaCheckCircle },
+  REJECTED: { color: 'var(--color-error)', bg: 'rgba(239,68,68,0.12)', icon: FaTimesCircle },
+  PENDING: { color: 'var(--color-warning)', bg: 'rgba(245,158,11,0.12)', icon: FaClock },
+  WITHDRAWN: { color: 'var(--color-text-muted)', bg: 'rgba(107,114,128,0.12)', icon: FaClock },
 };
 
 const RentalRequests = () => {
@@ -85,12 +86,13 @@ const RentalRequests = () => {
       link.click();
       link.parentNode.removeChild(link);
     } catch (error) {
-      toast.error('Failed to download document. Not authorized or not found.');
+      const msg = error.response?.data?.message || 'Failed to download document. Not authorized or not found.';
+      toast.error(typeof msg === 'string' ? msg : 'Download failed.');
     }
   };
 
   const filteredRequests = requests.filter((req) =>
-    filter === 'All' ? true : req.status === filter
+    filter === 'All' ? true : (req.status || '').toUpperCase() === filter.toUpperCase()
   );
 
   const formatDate = (dateStr) => {
@@ -133,7 +135,7 @@ const RentalRequests = () => {
                     opacity: 0.6,
                   }}
                 >
-                  ({requests.filter((r) => (opt === 'All' ? true : r.status === opt)).length})
+                  ({requests.filter((r) => (opt === 'All' ? true : (r.status || '').toUpperCase() === opt.toUpperCase())).length})
                 </span>
               )}
             </button>
@@ -187,7 +189,7 @@ const RentalRequests = () => {
                   }}
                 >
                   <th style={{ padding: 'var(--space-4) var(--space-5)' }}>Applicant</th>
-                  <th>Proposed Rent</th>
+                  <th>Monthly Income</th>
                   <th>Lease Period</th>
                   <th>Documents</th>
                   <th>Status</th>
@@ -196,7 +198,8 @@ const RentalRequests = () => {
               </thead>
               <tbody>
                 {filteredRequests.map((req) => {
-                  const cfg = STATUS_CONFIG[req.status] || STATUS_CONFIG.Pending;
+                  const statusKey = (req.status || 'PENDING').toUpperCase();
+                  const cfg = STATUS_CONFIG[statusKey] || STATUS_CONFIG.PENDING;
                   const StatusIcon = cfg.icon;
                   return (
                     <tr
@@ -228,10 +231,10 @@ const RentalRequests = () => {
                         )}
                       </td>
 
-                      {/* Proposed Rent */}
+                      {/* Monthly Income */}
                       <td>
                         <span style={{ fontWeight: 700, color: 'var(--color-success)' }}>
-                          ${req.proposedRent?.toLocaleString() || '—'}
+                          ${req.monthlyIncome?.toLocaleString() || '—'}
                         </span>
                         <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
                           /month
@@ -255,12 +258,12 @@ const RentalRequests = () => {
 
                       {/* Documents */}
                       <td>
-                        {req.documentUrls && req.documentUrls.length > 0 ? (
+                        {req.documents && req.documents.length > 0 ? (
                           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                            {req.documentUrls.map((url, i) => (
+                            {req.documents.map((doc, i) => (
                               <button
                                 key={i}
-                                onClick={() => handleDownloadDocument(url)}
+                                onClick={() => handleDownloadDocument(doc.fileUrl)}
                                 style={{
                                   display: 'inline-flex',
                                   alignItems: 'center',
@@ -276,7 +279,7 @@ const RentalRequests = () => {
                                   cursor: 'pointer'
                                 }}
                               >
-                                Doc {i + 1} <FaExternalLinkAlt style={{ fontSize: '0.55rem' }} />
+                                {doc.documentType || `Doc ${i + 1}`} <FaExternalLinkAlt style={{ fontSize: '0.55rem' }} />
                               </button>
                             ))}
                           </div>
@@ -309,7 +312,7 @@ const RentalRequests = () => {
 
                       {/* Actions */}
                       <td style={{ textAlign: 'right', paddingRight: 'var(--space-5)' }}>
-                        {req.status === 'Pending' && (
+                        {(req.status || '').toUpperCase() === 'PENDING' && (
                           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                             <button
                               className="btn btn-success btn-sm"
