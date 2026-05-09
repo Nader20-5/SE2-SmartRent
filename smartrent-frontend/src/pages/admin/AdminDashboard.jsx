@@ -10,7 +10,7 @@ import {
 
 import "./AdminDashboard.css";
 
-// ─── Helper: Format date ────────────────────────
+// Helper: Format date
 const formatDate = (dateString) => {
   if (!dateString) return "—";
   const date = new Date(dateString);
@@ -21,7 +21,7 @@ const formatDate = (dateString) => {
   });
 };
 
-// ─── Helper: Format price ───────────────────────
+// Helper: Format price
 const formatPrice = (price) => {
   if (price == null) return "—";
   return new Intl.NumberFormat("en-US", {
@@ -32,7 +32,7 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-// ─── Helper: Get initials ────────────────────────
+// Helper: Get initials
 const getInitials = (name) => {
   if (!name) return "?";
   return name
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
     activeProperties: 0,
     pendingApprovals: 0,
   });
-  
+
   const [loading, setLoading] = useState(true);
 
   // Tabs
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
   // Action in progress
   const [actionInProgress, setActionInProgress] = useState(null);
 
-  // ─── Fetch Data ─────────────────────────────
+  // Fetch Data
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -97,7 +97,7 @@ const AdminDashboard = () => {
     fetchData();
   }, [fetchData]);
 
-  // ─── Auto-dismiss alert ─────────────────────
+  // Auto-dismiss alert
   useEffect(() => {
     if (alert) {
       const timer = setTimeout(() => setAlert(null), 4000);
@@ -105,7 +105,7 @@ const AdminDashboard = () => {
     }
   }, [alert]);
 
-  // ─── Actions ───────────────────────
+  // Actions
   const handleToggleUserStatus = async (id, name, currentStatus) => {
     setActionInProgress(`toggle-user-${id}`);
     try {
@@ -124,19 +124,19 @@ const AdminDashboard = () => {
     setActionInProgress(`prop-status-${id}`);
     try {
       await updatePropertyStatusAdmin(id, status, status === "REJECTED" ? "Admin rejected" : "");
-      
+
       // Update local states
       if (status === "APPROVED") {
         const propToMove = pendingProperties.find(p => p.id === id);
         if (propToMove) {
-           setPendingProperties(prev => prev.filter(p => p.id !== id));
-           setAllProperties(prev => prev.map(p => p.id === id ? { ...p, status: "APPROVED" } : p));
+          setPendingProperties(prev => prev.filter(p => p.id !== id));
+          setAllProperties(prev => prev.map(p => p.id === id ? { ...p, status: "APPROVED" } : p));
         }
       } else if (status === "REJECTED") {
         setPendingProperties(prev => prev.filter(p => p.id !== id));
         setAllProperties(prev => prev.map(p => p.id === id ? { ...p, status: "REJECTED" } : p));
       }
-      
+
       setAlert({ type: "success", message: `Property "${title}" has been ${status}.` });
       fetchData(); // refresh stats
     } catch (error) {
@@ -148,9 +148,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-layout">
-      {/* ═══════════════════════════════════
+      {/*
           SIDEBAR
-      ═══════════════════════════════════ */}
+*/}
       <aside className="admin-sidebar">
         <div className="sidebar-logo">SmartRent</div>
 
@@ -162,10 +162,10 @@ const AdminDashboard = () => {
           >
             <span className="sidebar-nav-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
               </svg>
             </span>
             Dashboard
@@ -176,40 +176,40 @@ const AdminDashboard = () => {
           <div className="sidebar-section-label">Management</div>
 
 
-          <button 
-            className={`sidebar-nav-item ${activeTab === "all-users" ? "active" : ""}`} 
+          <button
+            className={`sidebar-nav-item ${activeTab === "all-users" ? "active" : ""}`}
             onClick={() => setActiveTab("all-users")}
             id="sidebar-all-users"
           >
             <span className="sidebar-nav-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
             </span>
             All Users
           </button>
 
-          <button 
-            className={`sidebar-nav-item ${activeTab === "pending-users" ? "active" : ""}`} 
+          <button
+            className={`sidebar-nav-item ${activeTab === "pending-users" ? "active" : ""}`}
             onClick={() => setActiveTab("pending-users")}
           >
             <span className="sidebar-nav-icon">⏳</span>
             Pending Landlords
           </button>
 
-          <button 
-            className={`sidebar-nav-item ${activeTab === "all-properties" ? "active" : ""}`} 
+          <button
+            className={`sidebar-nav-item ${activeTab === "all-properties" ? "active" : ""}`}
             onClick={() => setActiveTab("all-properties")}
           >
             <span className="sidebar-nav-icon">🏠</span>
             All Properties
           </button>
 
-          <button 
-            className={`sidebar-nav-item ${activeTab === "pending-properties" ? "active" : ""}`} 
+          <button
+            className={`sidebar-nav-item ${activeTab === "pending-properties" ? "active" : ""}`}
             onClick={() => setActiveTab("pending-properties")}
           >
             <span className="sidebar-nav-icon">⚠️</span>
@@ -223,9 +223,9 @@ const AdminDashboard = () => {
           <button className="sidebar-logout" onClick={logout} id="sidebar-logout">
             <span className="sidebar-nav-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
               </svg>
             </span>
             Logout
@@ -233,11 +233,11 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
-      {/* ═══════════════════════════════════
+      {/*
           MAIN CONTENT
-      ═══════════════════════════════════ */}
+*/}
       <main className="admin-main">
-        {/* ─── Top Bar ──────────────────── */}
+        {/* Top Bar */}
         <div className="admin-topbar">
           <div className="admin-topbar-left">
             <h1>Admin Dashboard</h1>
@@ -261,7 +261,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ─── Stats Row ─────────────────── */}
+        {/* Stats Row */}
         {activeTab === "dashboard" && (
           <div className="admin-stats">
             <div className="stat-card green">
@@ -298,7 +298,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ─── Alert ──────────────────── */}
+        {/* Alert */}
         {alert && (
           <div className={`admin-alert ${alert.type}`} id="admin-alert">
             <span className="admin-alert-icon">
@@ -309,7 +309,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* ─── Table Content ───────────── */}
+        {/* Table Content */}
         <div className="admin-table-container">
           {loading ? (
             <div className="admin-loading">
@@ -317,114 +317,114 @@ const AdminDashboard = () => {
               <div className="admin-loading-text">Loading dynamic data...</div>
             </div>
           ) : activeTab === "dashboard" ? (
-             <div className="admin-empty">
-                <div className="admin-empty-icon">📊</div>
-                <div className="admin-empty-text">Welcome to the Admin Dashboard</div>
-                <div className="admin-empty-sub">Overview of the system health and key metrics. Navigate via sidebar.</div>
-             </div>
+            <div className="admin-empty">
+              <div className="admin-empty-icon">📊</div>
+              <div className="admin-empty-text">Welcome to the Admin Dashboard</div>
+              <div className="admin-empty-sub">Overview of the system health and key metrics. Navigate via sidebar.</div>
+            </div>
           ) : activeTab === "all-users" ? (
             <div className="admin-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Email</th>
-                      <th>Role</th>
-                      <th>Status</th>
-                      <th>Actions</th>
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allUsers.map((u) => (
+                    <tr key={u.id}>
+                      <td>
+                        <div>
+                          <div className="table-name">{u.firstName} {u.lastName}</div>
+                          <div className="table-id">ID: #{u.id}</div>
+                        </div>
+                      </td>
+                      <td>{u.email}</td>
+                      <td>{u.role}</td>
+                      <td><span className={u.status === "ACTIVE" ? "status-badge active" : "status-badge inactive"}>{u.status}</span></td>
+                      <td>
+                        <div className="admin-actions">
+                          <button
+                            className={u.status === "ACTIVE" ? "btn-reject" : "btn-approve"}
+                            onClick={() => handleToggleUserStatus(u.id, `${u.firstName} ${u.lastName}`, u.status)}
+                            disabled={!!actionInProgress}
+                          >
+                            {u.status === "ACTIVE" ? "Suspend" : "Activate"}
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {allUsers.map((u) => (
-                      <tr key={u.id}>
-                         <td>
-                           <div>
-                             <div className="table-name">{u.firstName} {u.lastName}</div>
-                             <div className="table-id">ID: #{u.id}</div>
-                           </div>
-                         </td>
-                         <td>{u.email}</td>
-                         <td>{u.role}</td>
-                         <td><span className={u.status === "ACTIVE" ? "status-badge active" : "status-badge inactive"}>{u.status}</span></td>
-                         <td>
-                           <div className="admin-actions">
-                             <button 
-                                className={u.status === "ACTIVE" ? "btn-reject" : "btn-approve"} 
-                                onClick={() => handleToggleUserStatus(u.id, `${u.firstName} ${u.lastName}`, u.status)} 
-                                disabled={!!actionInProgress}
-                              >
-                               {u.status === "ACTIVE" ? "Suspend" : "Activate"}
-                             </button>
-                           </div>
-                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : activeTab === "pending-users" ? (
             <div className="admin-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr><th>Landlord</th><th>Email</th><th>Status</th><th>Actions</th></tr>
-                  </thead>
-                  <tbody>
-                    {pendingUsers.length === 0 ? <tr><td colSpan="4">No pending landlords.</td></tr> : pendingUsers.map((u) => (
-                      <tr key={u.id}>
-                         <td><div className="table-name">{u.firstName} {u.lastName}</div></td>
-                         <td>{u.email}</td>
-                         <td><span className="status-badge pending">PENDING</span></td>
-                         <td>
-                           <div className="admin-actions">
-                             <button className="btn-approve" onClick={() => handleToggleUserStatus(u.id, u.firstName, "PENDING")} disabled={!!actionInProgress}>Approve</button>
-                           </div>
-                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr><th>Landlord</th><th>Email</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                  {pendingUsers.length === 0 ? <tr><td colSpan="4">No pending landlords.</td></tr> : pendingUsers.map((u) => (
+                    <tr key={u.id}>
+                      <td><div className="table-name">{u.firstName} {u.lastName}</div></td>
+                      <td>{u.email}</td>
+                      <td><span className="status-badge pending">PENDING</span></td>
+                      <td>
+                        <div className="admin-actions">
+                          <button className="btn-approve" onClick={() => handleToggleUserStatus(u.id, u.firstName, "PENDING")} disabled={!!actionInProgress}>Approve</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : activeTab === "all-properties" ? (
             <div className="admin-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr><th>Property</th><th>Location</th><th>Rent</th><th>Status</th></tr>
-                  </thead>
-                  <tbody>
-                    {allProperties.map((p) => (
-                      <tr key={p.id}>
-                         <td><div className="table-name">{p.title}</div><div className="table-id">{p.type}</div></td>
-                         <td>{p.city}</td>
-                         <td>{formatPrice(p.monthlyRent)}</td>
-                         <td><span className={`status-badge ${p.status?.toLowerCase()}`}>{p.status}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr><th>Property</th><th>Location</th><th>Rent</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  {allProperties.map((p) => (
+                    <tr key={p.id}>
+                      <td><div className="table-name">{p.title}</div><div className="table-id">{p.type}</div></td>
+                      <td>{p.city}</td>
+                      <td>{formatPrice(p.monthlyRent)}</td>
+                      <td><span className={`status-badge ${p.status?.toLowerCase()}`}>{p.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : activeTab === "pending-properties" ? (
             <div className="admin-table-wrapper">
-                <table className="admin-table">
-                  <thead>
-                    <tr><th>Property</th><th>Location</th><th>Rent</th><th>Actions</th></tr>
-                  </thead>
-                  <tbody>
-                    {pendingProperties.length === 0 ? <tr><td colSpan="4">No pending properties.</td></tr> : pendingProperties.map((p) => (
-                      <tr key={p.id}>
-                         <td><div className="table-name">{p.title}</div></td>
-                         <td>{p.city}</td>
-                         <td>{formatPrice(p.monthlyRent)}</td>
-                         <td>
-                           <div className="admin-actions">
-                             <button className="btn-approve" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "APPROVED")} disabled={!!actionInProgress}>Approve</button>
-                             <button className="btn-reject" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "REJECTED")} disabled={!!actionInProgress}>Reject</button>
-                           </div>
-                         </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <table className="admin-table">
+                <thead>
+                  <tr><th>Property</th><th>Location</th><th>Rent</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                  {pendingProperties.length === 0 ? <tr><td colSpan="4">No pending properties.</td></tr> : pendingProperties.map((p) => (
+                    <tr key={p.id}>
+                      <td><div className="table-name">{p.title}</div></td>
+                      <td>{p.city}</td>
+                      <td>{formatPrice(p.monthlyRent)}</td>
+                      <td>
+                        <div className="admin-actions">
+                          <button className="btn-approve" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "APPROVED")} disabled={!!actionInProgress}>Approve</button>
+                          <button className="btn-reject" onClick={() => handleUpdatePropertyStatus(p.id, p.title, "REJECTED")} disabled={!!actionInProgress}>Reject</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : null}
         </div>
       </main>

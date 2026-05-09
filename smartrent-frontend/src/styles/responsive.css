@@ -1,6 +1,6 @@
 ﻿/* ===================================================================
    RESPONSIVE BREAKPOINTS
-   ═══════════════════════════════════════════════════════════════════ */
+*/
 
 @media (max-width: 1200px) {
   .detail-layout {
@@ -169,7 +169,6 @@
 }
 
 
-/* ─── Toast Overrides ─── */
 .Toastify__toast {
   font-family: var(--font-family) !important;
   border-radius: var(--radius-md) !important;

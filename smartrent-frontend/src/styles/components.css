@@ -1,6 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════════
-   FAVORITES PAGE
-   ═══════════════════════════════════════════════════════════════════ */
 .favorites-header {
   margin-bottom: var(--space-10);
 }
@@ -52,9 +49,6 @@
 }
 
 
-/* ═══════════════════════════════════════════════════════════════════
-   BUTTONS (Enhanced)
-   ═══════════════════════════════════════════════════════════════════ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -133,7 +127,6 @@
 }
 
 
-/* ─── Form Elements ─── */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -166,6 +159,8 @@
 .form-textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  background-color: white;
+  color: black;
 }
 
 .form-input::placeholder,
@@ -184,7 +179,6 @@
   gap: var(--space-6);
 }
 
-/* ─── Badges ─── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -216,7 +210,6 @@
   color: var(--color-info);
 }
 
-/* ─── Status Badges (Shared) ─── */
 .status-badge {
   display: inline-flex;
   align-items: center;
@@ -252,7 +245,6 @@
 }
 
 
-/* ─── Loading Spinner ─── */
 .spinner {
   display: inline-block;
   width: 2rem;

@@ -1,5 +1,6 @@
 package com.smartrent.user.controller;
 
+import com.smartrent.user.annotation.Auditable;
 import com.smartrent.user.dto.UpdateProfileDto;
 import com.smartrent.user.dto.UserResponseDto;
 import com.smartrent.user.service.interfaces.IUserService;
@@ -20,6 +21,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getOwnProfile(userId));
     }
 
+    @Auditable(action = "UPDATE_PROFILE", resourceType = "USER")
     @PutMapping("/me")
     public ResponseEntity<UserResponseDto> updateOwnProfile(
             @RequestHeader("X-User-Id") Long userId,
@@ -27,10 +29,6 @@ public class UserController {
         return ResponseEntity.ok(userService.updateOwnProfile(userId, dto));
     }
 
-    /**
-     * Internal endpoint — called by Feign from other microservices.
-     * No JWT required; this is service-to-service communication.
-     */
     @GetMapping("/{id}/internal")
     public ResponseEntity<UserResponseDto> getUserInternal(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserInternal(id));

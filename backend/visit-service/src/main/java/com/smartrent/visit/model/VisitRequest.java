@@ -34,6 +34,9 @@ public class VisitRequest {
     @Column(name = "property_title", nullable = false, length = 255)
     private String propertyTitle;
 
+    @Column(name = "property_location", length = 500)
+    private String propertyLocation;
+
     @Column(name = "requested_date", nullable = false)
     private LocalDate requestedDate;
 

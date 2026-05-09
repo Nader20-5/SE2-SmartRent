@@ -1,5 +1,6 @@
 package com.smartrent.rental.controller;
 
+import com.smartrent.rental.annotation.Auditable;
 import com.smartrent.rental.dto.*;
 import com.smartrent.rental.model.DocumentType;
 import com.smartrent.rental.service.interfaces.IRentalService;
@@ -18,6 +19,7 @@ public class RentalController {
 
     private final IRentalService rentalService;
 
+    @Auditable(action = "CREATE", resourceType = "RENTAL_APPLICATION")
     @PostMapping
     public ResponseEntity<RentalResponseDto> createApplication(
             @RequestHeader("X-User-Id") Long userId,
@@ -25,6 +27,7 @@ public class RentalController {
         return ResponseEntity.ok(rentalService.createApplication(userId, dto));
     }
 
+    @Auditable(action = "UPLOAD_DOCUMENT", resourceType = "RENTAL_APPLICATION")
     @PostMapping("/{id}/documents")
     public ResponseEntity<RentalResponseDto> uploadDocuments(
             @RequestHeader("X-User-Id") Long userId,
@@ -48,6 +51,7 @@ public class RentalController {
         return ResponseEntity.ok(rentalService.getApplicationById(userId, role, id));
     }
 
+    @Auditable(action = "WITHDRAW", resourceType = "RENTAL_APPLICATION")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> withdrawApplication(
             @RequestHeader("X-User-Id") Long userId,
@@ -62,6 +66,7 @@ public class RentalController {
         return ResponseEntity.ok(rentalService.getLandlordApplications(userId));
     }
 
+    @Auditable(action = "APPROVE", resourceType = "RENTAL_APPLICATION")
     @PatchMapping("/{id}/approve")
     public ResponseEntity<RentalResponseDto> approveApplication(
             @RequestHeader("X-User-Id") Long userId,
@@ -69,6 +74,7 @@ public class RentalController {
         return ResponseEntity.ok(rentalService.approveApplication(userId, id));
     }
 
+    @Auditable(action = "REJECT", resourceType = "RENTAL_APPLICATION")
     @PatchMapping("/{id}/reject")
     public ResponseEntity<RentalResponseDto> rejectApplication(
             @RequestHeader("X-User-Id") Long userId,

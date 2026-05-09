@@ -22,6 +22,7 @@ public class VisitResponseDto {
     private Long landlordId;
     private Long propertyId;
     private String propertyTitle;
+    private String propertyLocation;
     private LocalDate requestedDate;
     private LocalTime requestedTime;
     private LocalDate suggestedDate;

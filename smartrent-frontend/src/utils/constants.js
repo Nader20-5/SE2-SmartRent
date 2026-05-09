@@ -55,10 +55,6 @@ export const PAGINATION = {
   DEFAULT_PAGE: 0,
 };
 
-/**
- * Resolves property image URLs to a loadable path.
- * Handles absolute URLs, /uploads/ paths, and legacy "uploads/" paths.
- */
 export const getImageUrl = (url) => {
   if (!url) return null;
   // Already an absolute URL (http/https)

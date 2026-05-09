@@ -1,6 +1,6 @@
 ﻿/* ===================================================================
    ADD / EDIT PROPERTY PAGE
-   ═══════════════════════════════════════════════════════════════════ */
+*/
 .add-property-page {
   max-width: 800px;
   margin: 0 auto;
@@ -43,7 +43,6 @@
   gap: var(--space-8);
 }
 
-/* Form Sections */
 .form-section {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
@@ -67,7 +66,6 @@
   gap: var(--space-5);
 }
 
-/* Type Selector Cards */
 .type-selector-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -120,7 +118,6 @@
   color: var(--color-primary-light);
 }
 
-/* Amenity Toggles */
 .amenity-toggles-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -163,7 +160,6 @@
   color: var(--color-text-secondary);
 }
 
-/* iOS-style Switch */
 .amenity-switch {
   position: relative;
   width: 48px;
@@ -198,7 +194,6 @@
   transform: translateX(22px);
 }
 
-/* Image Upload Dropzone */
 .image-dropzone {
   display: flex;
   flex-direction: column;
@@ -253,7 +248,6 @@
   display: none;
 }
 
-/* Image Preview Grid */
 .image-preview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -328,7 +322,6 @@
   z-index: 2;
 }
 
-/* Edit Property: existing image sections */
 .edit-existing-images,
 .edit-new-images {
   display: flex;
@@ -336,7 +329,6 @@
   gap: var(--space-3);
 }
 
-/* Submit */
 .add-property-submit {
   display: flex;
   justify-content: center;

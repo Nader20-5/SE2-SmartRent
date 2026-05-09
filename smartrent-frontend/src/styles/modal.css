@@ -1,6 +1,6 @@
 ﻿/* ===================================================================
    MODAL / POPUP
-   ═══════════════════════════════════════════════════════════════════ */
+*/
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -48,7 +48,6 @@
   }
 }
 
-/* Modal Header */
 .modal-header {
   display: flex;
   align-items: flex-start;
@@ -92,14 +91,12 @@
   background: rgba(239, 68, 68, 0.08);
 }
 
-/* Modal Body */
 .modal-body {
   overflow-y: auto;
   padding: var(--space-8);
   flex: 1;
 }
 
-/* Modal Footer */
 .modal-footer {
   display: flex;
   align-items: center;
@@ -110,7 +107,6 @@
   flex-shrink: 0;
 }
 
-/* Modal Form Sections */
 .modal-form-section {
   margin-bottom: var(--space-8);
   padding-bottom: var(--space-6);
@@ -131,7 +127,6 @@
   margin-bottom: var(--space-5);
 }
 
-/* Form error text */
 .form-error-text {
   font-size: var(--font-size-xs);
   color: var(--color-error);

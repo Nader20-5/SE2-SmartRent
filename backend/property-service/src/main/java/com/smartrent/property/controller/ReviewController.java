@@ -18,14 +18,14 @@ public class ReviewController {
 
     private final IReviewService reviewService;
 
-    // ── GET reviews for a property (public) ──────────────────────
+    // GET reviews for a property (public)
     @GetMapping("/property/{propertyId}")
     public ResponseEntity<List<ReviewResponseDto>> getReviewsByProperty(
             @PathVariable Long propertyId) {
         return ResponseEntity.ok(reviewService.getReviewsByProperty(propertyId));
     }
 
-    // ── CREATE review (tenant) ────────────────────────────────────
+    // CREATE review (tenant)
     @PostMapping("/property/{propertyId}")
     public ResponseEntity<ReviewResponseDto> createReview(
             @RequestHeader("X-User-Id") Long userId,
@@ -35,7 +35,7 @@ public class ReviewController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // ── UPDATE review (tenant — ownership checked in service) ─────
+    // UPDATE review (tenant — ownership checked in service)
     @PutMapping("/{reviewId}")
     public ResponseEntity<ReviewResponseDto> updateReview(
             @RequestHeader("X-User-Id") Long userId,
@@ -44,7 +44,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.updateReview(userId, reviewId, dto));
     }
 
-    // ── DELETE review (tenant — ownership checked in service) ─────
+    // DELETE review (tenant — ownership checked in service)
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(
             @RequestHeader("X-User-Id") Long userId,

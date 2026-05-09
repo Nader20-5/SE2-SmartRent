@@ -1,5 +1,6 @@
 package com.smartrent.user.controller;
 
+import com.smartrent.user.annotation.Auditable;
 import com.smartrent.user.dto.AdminStatsDto;
 import com.smartrent.user.dto.UserResponseDto;
 import com.smartrent.user.dto.UserStatusUpdateDto;
@@ -30,6 +31,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.getAllUsers(role, status, pageable));
     }
 
+    @Auditable(action = "UPDATE_USER_STATUS", resourceType = "USER")
     @PatchMapping("/users/{id}/status")
     public ResponseEntity<UserResponseDto> updateUserStatus(
             @PathVariable Long id,

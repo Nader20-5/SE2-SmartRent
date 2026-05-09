@@ -196,7 +196,7 @@ const AddProperty = () => {
             onSubmit={handleSubmit}
             id="add-property-form"
           >
-            {/* ══════ Section: Basic Info ══════ */}
+            {/* Section: Basic Info */}
             <section className="form-section">
               <h2 className="form-section-title">Basic Information</h2>
               <div className="form-section-body">
@@ -233,7 +233,7 @@ const AddProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Property Type ══════ */}
+            {/* Section: Property Type */}
             <section className="form-section">
               <h2 className="form-section-title">Property Type</h2>
               <div className="form-section-body">
@@ -255,7 +255,7 @@ const AddProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Price & Location ══════ */}
+            {/* Section: Price & Location */}
             <section className="form-section">
               <h2 className="form-section-title">Price & Location</h2>
               <div className="form-section-body">
@@ -296,7 +296,7 @@ const AddProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Amenities ══════ */}
+            {/* Section: Amenities */}
             <section className="form-section">
               <h2 className="form-section-title">Amenities</h2>
               <div className="form-section-body">
@@ -325,7 +325,7 @@ const AddProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Image Upload ══════ */}
+            {/* Section: Image Upload */}
             <section className="form-section">
               <h2 className="form-section-title">Property Images</h2>
               <div className="form-section-body">
@@ -386,7 +386,7 @@ const AddProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Feedback ══════ */}
+            {/* Feedback */}
             {submitMsg && (
               <div className={`add-property-alert ${submitMsg.type}`} style={{
                 padding: "12px 20px",
@@ -406,7 +406,7 @@ const AddProperty = () => {
               </div>
             )}
 
-            {/* ══════ Submit ══════ */}
+            {/* Submit */}
             <div className="add-property-submit">
               <button
                 type="submit"

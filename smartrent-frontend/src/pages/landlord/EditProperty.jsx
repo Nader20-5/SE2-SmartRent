@@ -174,7 +174,7 @@ const EditProperty = () => {
     <div className="page-wrapper">
       <div className="container">
         <div className="add-property-page">
-          {/* ── Back link ── */}
+          {/* Back link */}
           <Link to="/landlord/properties" className="edit-property-back-link">
             <FaChevronLeft /> Back to My Properties
           </Link>
@@ -191,7 +191,7 @@ const EditProperty = () => {
             onSubmit={handleSubmit}
             id="edit-property-form"
           >
-            {/* ══════ Section: Basic Info ══════ */}
+            {/* Section: Basic Info */}
             <section className="form-section">
               <h2 className="form-section-title">Basic Information</h2>
               <div className="form-section-body">
@@ -231,7 +231,7 @@ const EditProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Property Type ══════ */}
+            {/* Section: Property Type */}
             <section className="form-section">
               <h2 className="form-section-title">Property Type</h2>
               <div className="form-section-body">
@@ -253,7 +253,7 @@ const EditProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Price & Location ══════ */}
+            {/* Section: Price & Location */}
             <section className="form-section">
               <h2 className="form-section-title">Price & Location</h2>
               <div className="form-section-body">
@@ -300,7 +300,7 @@ const EditProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Amenities ══════ */}
+            {/* Section: Amenities */}
             <section className="form-section">
               <h2 className="form-section-title">Amenities</h2>
               <div className="form-section-body">
@@ -332,7 +332,7 @@ const EditProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Section: Image Management ══════ */}
+            {/* Section: Image Management */}
             <section className="form-section">
               <h2 className="form-section-title">Property Images</h2>
               <div className="form-section-body">
@@ -439,7 +439,7 @@ const EditProperty = () => {
               </div>
             </section>
 
-            {/* ══════ Submit ══════ */}
+            {/* Submit */}
             <div className="add-property-submit">
               <button
                 type="submit"

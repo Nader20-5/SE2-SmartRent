@@ -8,10 +8,6 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Frozen cross-service contract — consumed by visit-service and rental-service.
- * DO NOT add, remove, or rename any fields.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,5 +19,7 @@ public class PropertySummaryDto {
     private String status;        // "APPROVED", "PENDING", etc.
     @JsonProperty("isAvailable")
     private Boolean isAvailable;
+    private String city;
+    private String address;
     private BigDecimal monthlyRent;
 }

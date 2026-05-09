@@ -1,5 +1,6 @@
 package com.smartrent.property.controller;
 
+import com.smartrent.property.annotation.Auditable;
 import com.smartrent.property.dto.*;
 import com.smartrent.property.model.PropertyStatus;
 import com.smartrent.property.service.interfaces.IPropertyService;
@@ -22,21 +23,22 @@ public class PropertyController {
 
     private final IPropertyService propertyService;
 
-    // ── Search (public — handles /api/properties and /api/properties/search) ──
+    // Search (public — handles /api/properties and /api/properties/search)
     @GetMapping({ "", "/search" })
     public ResponseEntity<Page<PropertyResponseDto>> searchProperties(
             PropertySearchParams params) {
         return ResponseEntity.ok(propertyService.searchProperties(params));
     }
 
-    // ── Get by ID (public) ───────────────────────────────────────
+    // Get by ID (public)
     @GetMapping("/{propertyId}")
     public ResponseEntity<PropertyResponseDto> getProperty(
             @PathVariable Long propertyId) {
         return ResponseEntity.ok(propertyService.getPropertyById(propertyId));
     }
 
-    // ── Create (landlord) ────────────────────────────────────────
+    // Create (landlord)
+    @Auditable(action = "CREATE", resourceType = "PROPERTY")
     @PostMapping
     public ResponseEntity<PropertyResponseDto> createProperty(
             @RequestHeader("X-User-Id") Long userId,
@@ -45,7 +47,8 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // ── Update (landlord — ownership checked in service) ─────────
+    // Update (landlord — ownership checked in service)
+    @Auditable(action = "UPDATE", resourceType = "PROPERTY")
     @PutMapping("/{propertyId}")
     public ResponseEntity<PropertyResponseDto> updateProperty(
             @RequestHeader("X-User-Id") Long userId,
@@ -54,7 +57,8 @@ public class PropertyController {
         return ResponseEntity.ok(propertyService.updateProperty(userId, propertyId, dto));
     }
 
-    // ── Delete (landlord — cascades images & amenities) ──────────
+    // Delete (landlord — cascades images & amenities)
+    @Auditable(action = "DELETE", resourceType = "PROPERTY")
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<Void> deleteProperty(
             @RequestHeader("X-User-Id") Long userId,
@@ -63,7 +67,8 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Upload images (landlord — multipart/form-data) ───────────
+    // Upload images (landlord — multipart/form-data)
+    @Auditable(action = "UPLOAD_IMAGES", resourceType = "PROPERTY")
     @PostMapping(value = "/{propertyId}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PropertyResponseDto> uploadImages(
             @RequestHeader("X-User-Id") Long userId,
@@ -73,7 +78,8 @@ public class PropertyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(updated);
     }
 
-    // ── Delete image (landlord) ──────────────────────────────────
+    // Delete image (landlord)
+    @Auditable(action = "DELETE_IMAGE", resourceType = "PROPERTY")
     @DeleteMapping("/{propertyId}/images/{imageId}")
     public ResponseEntity<Void> deleteImage(
             @RequestHeader("X-User-Id") Long userId,
@@ -83,7 +89,8 @@ public class PropertyController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Update status (admin only — checks X-User-Role) ──────────
+    // Update status (admin only — checks X-User-Role)
+    @Auditable(action = "UPDATE_STATUS", resourceType = "PROPERTY")
     @PatchMapping("/{propertyId}/status")
     public ResponseEntity<PropertyResponseDto> updatePropertyStatus(
             @RequestHeader(value = "X-User-Role", required = false) String userRole,
@@ -99,7 +106,7 @@ public class PropertyController {
                 propertyService.updatePropertyStatus(propertyId, status, reason));
     }
 
-    // ── Landlord's own listings ──────────────────────────────────
+    // Landlord's own listings
     @GetMapping({ "/landlord", "/landlord/me" })
     public ResponseEntity<Page<PropertyResponseDto>> getLandlordProperties(
             @RequestHeader(value = "X-User-Id", required = false) Long userId,
@@ -107,14 +114,14 @@ public class PropertyController {
         return ResponseEntity.ok(propertyService.getLandlordProperties(userId, pageable));
     }
 
-    // ── Internal endpoint (consumed by visit-service / rental-service) ─
+    // Internal endpoint (consumed by visit-service / rental-service)
     @GetMapping("/{propertyId}/internal")
     public ResponseEntity<PropertySummaryDto> getPropertyInternal(
             @PathVariable Long propertyId) {
         return ResponseEntity.ok(propertyService.getPropertyInternal(propertyId));
     }
 
-    // ── Admin stats endpoint ─────────────────────────────────────
+    // Admin stats endpoint
     @GetMapping("/admin/stats")
     public ResponseEntity<java.util.Map<String, Long>> getPropertyStats(
             @RequestHeader(value = "X-User-Role", required = false) String userRole) {
@@ -124,7 +131,7 @@ public class PropertyController {
         return ResponseEntity.ok(propertyService.getPropertyStats());
     }
 
-    // ── Admin list endpoint ──────────────────────────────────────
+    // Admin list endpoint
     @GetMapping("/admin/all")
     public ResponseEntity<Page<PropertyResponseDto>> getAllPropertiesForAdmin(
             @RequestHeader(value = "X-User-Role", required = false) String userRole,

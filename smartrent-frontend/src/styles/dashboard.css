@@ -1,12 +1,8 @@
-/* ===================================================================
-   DASHBOARD LAYOUT (Sidebar + Content)
-   ═══════════════════════════════════════════════════════════════════ */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar */
 .dashboard-sidebar {
   position: fixed;
   top: 0;
@@ -110,7 +106,6 @@
 }
 
 
-/* Dashboard Content Area */
 .dashboard-content {
   flex: 1;
   margin-left: var(--sidebar-width);
@@ -145,7 +140,6 @@
 }
 
 
-/* ─── Stats Row ─── */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -229,7 +223,6 @@
 }
 
 
-/* ─── Dashboard Tabs ─── */
 .dashboard-tabs {
   display: flex;
   gap: var(--space-1);
@@ -265,7 +258,6 @@
 }
 
 
-/* ─── Activity Timeline ─── */
 .activity-timeline {
   display: flex;
   flex-direction: column;
@@ -355,7 +347,6 @@
 }
 
 
-/* ─── My Properties Page ─── */
 .my-properties-toolbar {
   display: flex;
   align-items: center;

@@ -32,7 +32,7 @@ public class ReviewServiceImpl implements IReviewService {
     private final ReviewMapper reviewMapper;
     private final com.smartrent.property.client.UserServiceClient userServiceClient;
 
-    // ── GET all reviews for a property ───────────────────────────
+    // GET all reviews for a property
     @Override
     @Transactional(readOnly = true)
     public List<ReviewResponseDto> getReviewsByProperty(Long propertyId) {
@@ -42,7 +42,7 @@ public class ReviewServiceImpl implements IReviewService {
                 .collect(Collectors.toList());
     }
 
-    // ── CREATE review ─────────────────────────────────────────────
+    // CREATE review
     @Override
     @Transactional
     public ReviewResponseDto createReview(Long tenantId, Long propertyId, CreateReviewDto dto) {
@@ -77,7 +77,7 @@ public class ReviewServiceImpl implements IReviewService {
         return enrichReview(saved);
     }
 
-    // ── UPDATE review ─────────────────────────────────────────────
+    // UPDATE review
     @Override
     @Transactional
     public ReviewResponseDto updateReview(Long tenantId, Long reviewId, CreateReviewDto dto) {
@@ -116,7 +116,7 @@ public class ReviewServiceImpl implements IReviewService {
     }
 
 
-    // ── DELETE review ─────────────────────────────────────────────
+    // DELETE review
     @Override
     @Transactional
     public void deleteReview(Long tenantId, Long reviewId) {

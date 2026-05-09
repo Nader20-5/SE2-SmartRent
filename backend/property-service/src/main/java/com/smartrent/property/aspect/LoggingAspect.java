@@ -22,9 +22,9 @@ public class LoggingAspect {
 
         long start = System.currentTimeMillis();
         try {
-            Object result = pjp.proceed();
-            long elapsed = System.currentTimeMillis() - start;
-            log.info("← {} completed successfully in {}ms", methodName, elapsed);
+            Object result = pjp.proceed(); // hena bnbd2 el method
+            long elapsed = System.currentTimeMillis() - start; // bn7sb el time
+            log.info("← {} completed successfully in {}ms", methodName, elapsed); // log el result
             return result;
         } catch (Exception e) {
             long elapsed = System.currentTimeMillis() - start;

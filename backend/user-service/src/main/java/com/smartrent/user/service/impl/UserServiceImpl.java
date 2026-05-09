@@ -49,10 +49,6 @@ public class UserServiceImpl implements IUserService {
         return userMapper.toResponseDto(user);
     }
 
-    /**
-     * Internal endpoint called by Feign from other services.
-     * Must never throw 500 — other services depend on this.
-     */
     @Override
     public UserResponseDto getUserInternal(Long userId) {
         User user = userRepository.findById(userId)

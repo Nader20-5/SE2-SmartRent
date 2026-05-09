@@ -62,7 +62,7 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      {/* ═══════ LEFT BRANDED PANEL ═══════ */}
+      {/* LEFT BRANDED PANEL */}
       <div className="login-brand-panel">
         <div className="brand-content">
           <div className="brand-logo-large">SmartRent</div>
@@ -102,7 +102,7 @@ const Login = () => {
         </div>
       </div>
 
-      {/* ═══════ RIGHT FORM PANEL ═══════ */}
+      {/* RIGHT FORM PANEL */}
       <div className="login-form-panel">
         <div className="login-form-wrapper">
           <div className="login-mobile-logo">SMARTRENT</div>

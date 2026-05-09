@@ -91,7 +91,7 @@ const Register = () => {
 
   return (
     <div className={`register-page ${isLandlord ? 'theme-landlord' : 'theme-tenant'}`}>
-      {/* ═══════ TOP BAR ═══════ */}
+      {/* TOP BAR */}
       <div className="register-topbar">
         <div className="register-topbar-logo">SmartRent</div>
         <Link to="/login" className="register-topbar-link">
@@ -99,7 +99,7 @@ const Register = () => {
         </Link>
       </div>
 
-      {/* ═══════ MAIN CONTENT ═══════ */}
+      {/* MAIN CONTENT */}
       <div className="register-content">
         <div className="register-card">
           {/* Card Header */}

@@ -27,7 +27,7 @@ public class FavoriteServiceImpl implements IFavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final PropertyRepository propertyRepository;
 
-    // ── GET favorites for a tenant ───────────────────────────────
+    // GET favorites for a tenant
     @Override
     @Transactional(readOnly = true)
     public List<FavoriteResponseDto> getTenantFavorites(Long tenantId) {
@@ -36,7 +36,7 @@ public class FavoriteServiceImpl implements IFavoriteService {
                 .collect(Collectors.toList());
     }
 
-    // ── ADD favorite ──────────────────────────────────────────────
+    // ADD favorite
     @Override
     @Transactional
     public void addFavorite(Long tenantId, Long propertyId) {
@@ -68,7 +68,7 @@ public class FavoriteServiceImpl implements IFavoriteService {
         log.info("Tenant {} added property {} to favorites", tenantId, propertyId);
     }
 
-    // ── REMOVE favorite ───────────────────────────────────────────
+    // REMOVE favorite
     @Override
     @Transactional
     public void removeFavorite(Long tenantId, Long propertyId) {
@@ -80,14 +80,14 @@ public class FavoriteServiceImpl implements IFavoriteService {
         log.info("Tenant {} removed property {} from favorites", tenantId, propertyId);
     }
 
-    // ── CHECK if a property is favorited ─────────────────────────
+    // CHECK if a property is favorited
     @Override
     @Transactional(readOnly = true)
     public boolean isFavorited(Long tenantId, Long propertyId) {
         return favoriteRepository.existsByTenantIdAndPropertyId(tenantId, propertyId);
     }
 
-    // ── Private helper ────────────────────────────────────────────
+    // Private helper
     private FavoriteResponseDto toDto(Favorite favorite) {
         Property p = favorite.getProperty();
         return FavoriteResponseDto.builder()

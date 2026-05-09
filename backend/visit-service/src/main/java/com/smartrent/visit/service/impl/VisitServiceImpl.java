@@ -29,6 +29,11 @@ public class VisitServiceImpl implements IVisitService {
         visitRequest.setTenantId(tenantId);
         visitRequest.setLandlordId(property.getLandlordId());
         visitRequest.setPropertyTitle(property.getTitle());
+        String loc = property.getCity();
+        if (property.getAddress() != null && !property.getAddress().isBlank()) {
+            loc = property.getAddress() + ", " + loc;
+        }
+        visitRequest.setPropertyLocation(loc);
         visitRequest.setStatus(com.smartrent.visit.model.VisitStatus.PENDING);
         
         visitRequest = visitRequestRepository.save(visitRequest);

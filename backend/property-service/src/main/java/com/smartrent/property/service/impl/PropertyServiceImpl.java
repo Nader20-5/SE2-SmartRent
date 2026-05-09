@@ -38,9 +38,7 @@ public class PropertyServiceImpl implements IPropertyService {
     private final UserServiceClient userServiceClient;
     private final FileStorageService fileStorageService;
 
-    // ──────────────────────────────────────────────────────────────
-    //  CREATE
-    // ──────────────────────────────────────────────────────────────
+    // CREATE
 
     @Override
     @Transactional
@@ -67,9 +65,7 @@ public class PropertyServiceImpl implements IPropertyService {
         return enrichResponse(saved);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  READ — single
-    // ──────────────────────────────────────────────────────────────
+    // READ — single
 
     @Override
     @Transactional(readOnly = true)
@@ -79,9 +75,7 @@ public class PropertyServiceImpl implements IPropertyService {
         return enrichResponse(property);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  SEARCH — JpaSpecificationExecutor
-    // ──────────────────────────────────────────────────────────────
+    // SEARCH — JpaSpecificationExecutor
 
     @Override
     @Transactional(readOnly = true)
@@ -90,14 +84,13 @@ public class PropertyServiceImpl implements IPropertyService {
 
         Pageable pageable = buildPageable(params);
 
-        Page<Property> page = propertyRepository.findAll(Objects.requireNonNull(spec), Objects.requireNonNull(pageable));
+        Page<Property> page = propertyRepository.findAll(Objects.requireNonNull(spec),
+                Objects.requireNonNull(pageable));
 
         return page.map(this::enrichResponse);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  LANDLORD PROPERTIES
-    // ──────────────────────────────────────────────────────────────
+    // LANDLORD PROPERTIES
 
     @Override
     @Transactional(readOnly = true)
@@ -106,9 +99,7 @@ public class PropertyServiceImpl implements IPropertyService {
                 .map(this::enrichResponse);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  UPDATE
-    // ──────────────────────────────────────────────────────────────
+    // UPDATE
 
     @Override
     @Transactional
@@ -116,17 +107,28 @@ public class PropertyServiceImpl implements IPropertyService {
         Property property = findOwnedProperty(landlordId, propertyId);
 
         // Update allowed fields only — NEVER change status or landlordId
-        if (dto.getTitle() != null)       property.setTitle(dto.getTitle());
-        if (dto.getDescription() != null) property.setDescription(dto.getDescription());
-        if (dto.getAddress() != null)     property.setAddress(dto.getAddress());
-        if (dto.getCity() != null)        property.setCity(dto.getCity());
-        if (dto.getDistrict() != null)    property.setDistrict(dto.getDistrict());
-        if (dto.getType() != null)        property.setType(dto.getType());
-        if (dto.getMonthlyRent() != null) property.setMonthlyRent(dto.getMonthlyRent());
-        if (dto.getBedrooms() != null)    property.setBedrooms(dto.getBedrooms());
-        if (dto.getBathrooms() != null)   property.setBathrooms(dto.getBathrooms());
-        if (dto.getAreaSqm() != null)     property.setAreaSqm(dto.getAreaSqm());
-        if (dto.getFloor() != null)       property.setFloor(dto.getFloor());
+        if (dto.getTitle() != null)
+            property.setTitle(dto.getTitle());
+        if (dto.getDescription() != null)
+            property.setDescription(dto.getDescription());
+        if (dto.getAddress() != null)
+            property.setAddress(dto.getAddress());
+        if (dto.getCity() != null)
+            property.setCity(dto.getCity());
+        if (dto.getDistrict() != null)
+            property.setDistrict(dto.getDistrict());
+        if (dto.getType() != null)
+            property.setType(dto.getType());
+        if (dto.getMonthlyRent() != null)
+            property.setMonthlyRent(dto.getMonthlyRent());
+        if (dto.getBedrooms() != null)
+            property.setBedrooms(dto.getBedrooms());
+        if (dto.getBathrooms() != null)
+            property.setBathrooms(dto.getBathrooms());
+        if (dto.getAreaSqm() != null)
+            property.setAreaSqm(dto.getAreaSqm());
+        if (dto.getFloor() != null)
+            property.setFloor(dto.getFloor());
 
         // Clear and re-save amenities
         if (dto.getAmenities() != null) {
@@ -139,9 +141,7 @@ public class PropertyServiceImpl implements IPropertyService {
         return enrichResponse(updated);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  DELETE — cascades to images and amenities
-    // ──────────────────────────────────────────────────────────────
+    // DELETE — cascades to images and amenities
 
     @Override
     @Transactional
@@ -151,9 +151,7 @@ public class PropertyServiceImpl implements IPropertyService {
         log.info("Deleted property {} for landlord {}", propertyId, landlordId);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  UPLOAD IMAGES — now returns PropertyResponseDto
-    // ──────────────────────────────────────────────────────────────
+    // UPLOAD IMAGES — now returns PropertyResponseDto
 
     @Override
     @Transactional
@@ -188,9 +186,7 @@ public class PropertyServiceImpl implements IPropertyService {
         return enrichResponse(updated);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  DELETE IMAGE
-    // ──────────────────────────────────────────────────────────────
+    // DELETE IMAGE
 
     @Override
     @Transactional
@@ -206,9 +202,7 @@ public class PropertyServiceImpl implements IPropertyService {
         log.info("Deleted image {} from property {}", imageId, propertyId);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  UPDATE STATUS — Admin only (now accepts rejectionReason)
-    // ──────────────────────────────────────────────────────────────
+    // UPDATE STATUS — Admin only (now accepts rejectionReason)
 
     @Override
     @Transactional
@@ -231,16 +225,23 @@ public class PropertyServiceImpl implements IPropertyService {
         return enrichResponse(updated);
     }
 
-    // ──────────────────────────────────────────────────────────────
-    //  INTERNAL — Frozen contract DTO
-    // ──────────────────────────────────────────────────────────────
+    // INTERNAL — Frozen contract DTO
 
     @Override
     @Transactional(readOnly = true)
     public PropertySummaryDto getPropertyInternal(Long id) {
         Property property = propertyRepository.findById(Objects.requireNonNull(id))
                 .orElseThrow(() -> new PropertyNotFoundException("Property not found with id: " + id));
-        return propertyMapper.toSummaryDto(property);
+        return PropertySummaryDto.builder()
+                .id(property.getId())
+                .title(property.getTitle())
+                .landlordId(property.getLandlordId())
+                .monthlyRent(property.getMonthlyRent())
+                .status(property.getStatus().name())
+                .isAvailable(property.isAvailable())
+                .city(property.getCity())
+                .address(property.getAddress())
+                .build();
     }
 
     @Override
@@ -265,25 +266,17 @@ public class PropertyServiceImpl implements IPropertyService {
         return page.map(this::enrichResponse);
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  PRIVATE HELPERS
-    // ══════════════════════════════════════════════════════════════
+    // PRIVATE HELPERS
 
-    /**
-     * Ownership check — throws UnauthorizedOwnerException if the property
-     * does not belong to the given landlord.
-     */
     private Property findOwnedProperty(Long landlordId, Long propertyId) {
         return propertyRepository.findByIdAndLandlordId(propertyId, landlordId)
                 .orElseThrow(() -> new UnauthorizedOwnerException(
                         "Property " + propertyId + " does not belong to landlord " + landlordId));
     }
 
-    /**
-     * Saves amenity list for a property. Skips if null or empty.
-     */
     private void saveAmenities(Property property, List<AmenityType> amenities) {
-        if (amenities == null || amenities.isEmpty()) return;
+        if (amenities == null || amenities.isEmpty())
+            return;
 
         List<PropertyAmenity> entities = amenities.stream()
                 .distinct()
@@ -296,40 +289,32 @@ public class PropertyServiceImpl implements IPropertyService {
         propertyAmenityRepository.saveAll(Objects.requireNonNull(entities));
     }
 
-    /**
-     * Builds a JPA Specification with the mandatory base filter
-     * (status = APPROVED AND is_available = true) plus optional filters
-     * chained with .and() only when non-null.
-     */
     private Specification<Property> buildSearchSpec(PropertySearchParams params) {
         // Base filter — always required
         Specification<Property> spec = (root, query, cb) -> cb.and(
                 cb.equal(root.get("status"), PropertyStatus.APPROVED),
-                cb.equal(root.get("isAvailable"), true)
-        );
+                cb.equal(root.get("isAvailable"), true));
 
         // Optional: city
         if (params.getCity() != null && !params.getCity().isBlank()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.like(cb.lower(root.get("city")), "%" + params.getCity().toLowerCase() + "%"));
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("city")),
+                    "%" + params.getCity().toLowerCase() + "%"));
         }
 
         // Optional: type
         if (params.getType() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.equal(root.get("type"), params.getType()));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("type"), params.getType()));
         }
 
         // Optional: minPrice (minRent)
         if (params.getMinPrice() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.greaterThanOrEqualTo(root.get("monthlyRent"), params.getMinPrice()));
+            spec = spec
+                    .and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("monthlyRent"), params.getMinPrice()));
         }
 
         // Optional: maxPrice (maxRent)
         if (params.getMaxPrice() != null) {
-            spec = spec.and((root, query, cb) ->
-                    cb.lessThanOrEqualTo(root.get("monthlyRent"), params.getMaxPrice()));
+            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("monthlyRent"), params.getMaxPrice()));
         }
 
         // Optional: amenities list — join with distinct to avoid row duplication
@@ -346,9 +331,6 @@ public class PropertyServiceImpl implements IPropertyService {
         return spec;
     }
 
-    /**
-     * Builds a Pageable from search params with safe defaults.
-     */
     private Pageable buildPageable(PropertySearchParams params) {
         int page = Math.max(params.getPage(), 0);
         int size = params.getSize() > 0 ? params.getSize() : 10;
@@ -359,13 +341,6 @@ public class PropertyServiceImpl implements IPropertyService {
         return PageRequest.of(page, size, Sort.by("createdAt").descending());
     }
 
-    /**
-     * Enriches a Property entity into a full PropertyResponseDto:
-     *   - maps image URLs
-     *   - maps amenity types
-     *   - computes average rating / review count
-     *   - calls UserServiceClient to get landlord name
-     */
     private PropertyResponseDto enrichResponse(Property property) {
         PropertyResponseDto dto = propertyMapper.toResponseDto(property);
 

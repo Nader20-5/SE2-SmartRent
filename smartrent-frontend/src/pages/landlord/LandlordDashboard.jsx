@@ -81,7 +81,7 @@ const LandlordDashboard = () => {
     fetchProperties();
   }, []);
 
-  // ── Derive stats from properties data ──
+  // Derive stats from properties data
   const stats = useMemo(() => {
     const total = properties.length;
     const approved = properties.filter((p) => p.status === "APPROVED").length;
@@ -112,7 +112,7 @@ const LandlordDashboard = () => {
       <Sidebar />
 
       <main className="dashboard-content">
-        {/* ── Page Header ── */}
+        {/* Page Header */}
         <div className="dashboard-header">
           <div>
             <h1 className="dashboard-title">Dashboard</h1>
@@ -123,7 +123,7 @@ const LandlordDashboard = () => {
 
         </div>
 
-        {/* ══════ Stats Row ══════ */}
+        {/* Stats Row */}
         <div className="stats-row" id="stats-row">
           <div className="stat-card stat-card-total">
             <div className="stat-card-icon-wrapper">
@@ -176,7 +176,7 @@ const LandlordDashboard = () => {
           </div>
         </div>
 
-        {/* ══════ Tab Navigation ══════ */}
+        {/* Tab Navigation */}
         <div className="dashboard-tabs" id="dashboard-tabs">
           <button
             className={`dashboard-tab ${
@@ -196,7 +196,7 @@ const LandlordDashboard = () => {
           </button>
         </div>
 
-        {/* ══════ Tab Content: Recent Activity ══════ */}
+        {/* Tab Content: Recent Activity */}
         {activeTab === "activity" && (
           <section className="activity-timeline" id="activity-timeline">
             {DUMMY_ACTIVITY.map((event) => {
@@ -222,7 +222,7 @@ const LandlordDashboard = () => {
           </section>
         )}
 
-        {/* ══════ Tab Content: My Properties ══════ */}
+        {/* Tab Content: My Properties */}
         {activeTab === "properties" && (
           <section className="dashboard-properties" id="dashboard-properties">
             <div className="property-grid">

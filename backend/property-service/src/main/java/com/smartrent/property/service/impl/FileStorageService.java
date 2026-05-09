@@ -14,32 +14,16 @@ import java.nio.file.StandardCopyOption;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Handles persisting uploaded image files to the local filesystem.
- * <ul>
- *   <li>Naming: UUID + original extension</li>
- *   <li>Directory: uploads/</li>
- *   <li>Validation: ONLY image/jpeg and image/png accepted</li>
- * </ul>
- */
 @Slf4j
 @Service
 public class FileStorageService {
 
     private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
             "image/jpeg",
-            "image/png"
-    );
+            "image/png");
 
     private static final Path UPLOAD_DIR = Paths.get("uploads");
 
-    /**
-     * Validates the MIME type and stores the file on disk.
-     *
-     * @param file the uploaded multipart file
-     * @return the relative path to the stored file (e.g. "uploads/uuid.jpg")
-     * @throws InvalidFileTypeException if the content type is not image/jpeg or image/png
-     */
     public String storeFile(MultipartFile file) {
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
@@ -71,11 +55,6 @@ public class FileStorageService {
         }
     }
 
-    /**
-     * Deletes a previously stored file from disk.
-     *
-     * @param filePath the relative path returned by {@link #storeFile}
-     */
     public void deleteFile(String filePath) {
         try {
             // Convert URL path (e.g. "/uploads/uuid.jpg") to filesystem path

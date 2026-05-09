@@ -220,16 +220,16 @@ const PropertyDetails = () => {
   return (
     <div className="page-wrapper">
       <div className="container">
-        {/* ── Breadcrumb ── */}
+        {/* Breadcrumb */}
         <nav className="detail-breadcrumb" id="detail-breadcrumb">
           <Link to="/" className="detail-breadcrumb-link">Properties</Link>
           <span className="detail-breadcrumb-separator">/</span>
           <span className="detail-breadcrumb-current">{property.title}</span>
         </nav>
 
-        {/* ══════════ Two-Column Layout ══════════ */}
+        {/* Two-Column Layout */}
         <div className="detail-layout">
-          {/* ── LEFT COLUMN (70%) ── */}
+          {/* LEFT COLUMN (70%) */}
           <div className="detail-main">
             {/* Image Gallery */}
             <section className="detail-gallery" id="detail-gallery">
@@ -327,7 +327,7 @@ const PropertyDetails = () => {
               </section>
             )}
 
-            {/* ══════ Reviews Section ══════ */}
+            {/* Reviews Section */}
             <section className="detail-reviews" id="detail-reviews">
               {/* Reviews Header Card */}
               <div className="reviews-hero">
@@ -464,7 +464,7 @@ const PropertyDetails = () => {
             </section>
           </div>
 
-          {/* ── RIGHT COLUMN (30%) — Sticky Booking Card ── */}
+          {/* RIGHT COLUMN (30%) — Sticky Booking Card */}
           <aside className="detail-sidebar">
             <div className="sticky-booking-card" id="sticky-booking-card">
               <div className="booking-card-price-section">

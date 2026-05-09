@@ -7,10 +7,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * Serves uploaded property images as static resources.
- * Files stored in the local "uploads/" directory are accessible via /uploads/**.
- */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

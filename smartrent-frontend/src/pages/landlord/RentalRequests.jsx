@@ -160,7 +160,6 @@ const RentalRequests = () => {
             </p>
           </div>
         ) : (
-          /* Table */
           <div
             style={{
               background: 'var(--color-bg-card)',

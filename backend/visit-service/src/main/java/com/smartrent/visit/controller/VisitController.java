@@ -1,5 +1,6 @@
 package com.smartrent.visit.controller;
 
+import com.smartrent.visit.annotation.Auditable;
 import com.smartrent.visit.dto.*;
 import com.smartrent.visit.service.interfaces.IVisitService;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ public class VisitController {
 
     private final IVisitService visitService;
 
+    @Auditable(action = "CREATE", resourceType = "VISIT")
     @PostMapping
     public ResponseEntity<VisitResponseDto> createVisit(
             @RequestHeader("X-User-Id") Long userId,
@@ -29,6 +31,7 @@ public class VisitController {
         return ResponseEntity.ok(visitService.getTenantVisits(userId));
     }
 
+    @Auditable(action = "CANCEL", resourceType = "VISIT")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancelVisit(
             @RequestHeader("X-User-Id") Long userId,
@@ -43,6 +46,7 @@ public class VisitController {
         return ResponseEntity.ok(visitService.getLandlordVisits(userId));
     }
 
+    @Auditable(action = "APPROVE", resourceType = "VISIT")
     @PatchMapping("/{id}/approve")
     public ResponseEntity<VisitResponseDto> approveVisit(
             @RequestHeader("X-User-Id") Long userId,
@@ -50,6 +54,7 @@ public class VisitController {
         return ResponseEntity.ok(visitService.approveVisit(userId, id));
     }
 
+    @Auditable(action = "REJECT", resourceType = "VISIT")
     @PatchMapping("/{id}/reject")
     public ResponseEntity<VisitResponseDto> rejectVisit(
             @RequestHeader("X-User-Id") Long userId,
@@ -58,6 +63,7 @@ public class VisitController {
         return ResponseEntity.ok(visitService.rejectVisit(userId, id, dto));
     }
 
+    @Auditable(action = "RESCHEDULE", resourceType = "VISIT")
     @PatchMapping("/{id}/reschedule")
     public ResponseEntity<VisitResponseDto> rescheduleVisit(
             @RequestHeader("X-User-Id") Long userId,

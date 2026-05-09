@@ -16,14 +16,14 @@ public class FavoriteController {
 
     private final IFavoriteService favoriteService;
 
-    // ── GET all favorites for the current tenant ──────────────────
+    // GET all favorites for the current tenant
     @GetMapping
     public ResponseEntity<List<FavoriteResponseDto>> getTenantFavorites(
             @RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(favoriteService.getTenantFavorites(userId));
     }
 
-    // ── CHECK if a property is in the tenant's favorites ─────────
+    // CHECK if a property is in the tenant's favorites
     @GetMapping("/{propertyId}/check")
     public ResponseEntity<Boolean> isFavorited(
             @RequestHeader("X-User-Id") Long userId,
@@ -31,7 +31,7 @@ public class FavoriteController {
         return ResponseEntity.ok(favoriteService.isFavorited(userId, propertyId));
     }
 
-    // ── ADD a property to favorites ───────────────────────────────
+    // ADD a property to favorites
     @PostMapping("/{propertyId}")
     public ResponseEntity<Void> addFavorite(
             @RequestHeader("X-User-Id") Long userId,
@@ -40,7 +40,7 @@ public class FavoriteController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // ── REMOVE a property from favorites ──────────────────────────
+    // REMOVE a property from favorites
     @DeleteMapping("/{propertyId}")
     public ResponseEntity<Void> removeFavorite(
             @RequestHeader("X-User-Id") Long userId,

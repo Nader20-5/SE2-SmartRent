@@ -11,16 +11,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Global exception handler for property-service (C2).
- * <p>
- * Only C2 exceptions live here. Coder 3 (review/favorite) will add
- * their own handlers below — keep this class clean and extensible.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // ── C2 Exceptions ────────────────────────────────────────────
+    // C2 Exceptions
 
     @ExceptionHandler(PropertyNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handlePropertyNotFound(PropertyNotFoundException ex) {
@@ -32,7 +26,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    // ── File-related ─────────────────────────────────────────────
+    // File-related
 
     @ExceptionHandler(InvalidFileTypeException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidFileType(InvalidFileTypeException ex) {
@@ -44,7 +38,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    // ── C3 Exceptions (review/favorite) ──────────────────────────
+    // C3 Exceptions (review/favorite)
 
     @ExceptionHandler(PropertyNotApprovedException.class)
     public ResponseEntity<Map<String, Object>> handlePropertyNotApproved(PropertyNotApprovedException ex) {
@@ -71,7 +65,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    // ── Validation ───────────────────────────────────────────────
+    // Validation
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationErrors(MethodArgumentNotValidException ex) {
@@ -81,14 +75,14 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, errors);
     }
 
-    // ── Access Denied (admin-only endpoints) ─────────────────────
+    // Access Denied (admin-only endpoints)
 
     @ExceptionHandler(java.nio.file.AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(java.nio.file.AccessDeniedException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    // ── Helper ───────────────────────────────────────────────────
+    // Helper
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {
         Map<String, Object> body = new HashMap<>();

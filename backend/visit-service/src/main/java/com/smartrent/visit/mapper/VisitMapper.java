@@ -15,6 +15,7 @@ public interface VisitMapper {
     @Mapping(target = "tenantId", ignore = true)
     @Mapping(target = "landlordId", ignore = true)
     @Mapping(target = "propertyTitle", ignore = true)
+    @Mapping(target = "propertyLocation", ignore = true)
     @Mapping(target = "suggestedDate", ignore = true)
     @Mapping(target = "suggestedTime", ignore = true)
     @Mapping(target = "status", ignore = true)

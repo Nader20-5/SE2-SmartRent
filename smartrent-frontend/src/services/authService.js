@@ -1,12 +1,5 @@
 import api from "./api";
 
-/**
- * Normalizes the flat AuthResponseDto from the backend
- * into the { token, user } shape the frontend expects.
- *
- * Backend returns: { token, userId, email, firstName, lastName, role }
- * Frontend needs:  { token, user: { id, fullName, email, role } }
- */
 const normalizeAuthResponse = (data) => ({
   token: data.token,
   user: {
@@ -31,7 +24,7 @@ export const register = async (formData) => {
     lastName: nameParts.slice(1).join(" ") || nameParts[0] || "",
     email: formData.email,
     password: formData.password,
-    role: formData.role || "TENANT",
+    role: (formData.role || "TENANT").toUpperCase(),
     phone: formData.phoneNumber || null,
   };
 

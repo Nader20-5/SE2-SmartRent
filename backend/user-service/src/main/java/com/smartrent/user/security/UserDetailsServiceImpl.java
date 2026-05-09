@@ -15,7 +15,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        // TODO: implement — find user by email, map to Spring Security UserDetails
         return null;
     }
 }
